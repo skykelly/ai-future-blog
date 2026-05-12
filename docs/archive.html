@@ -336,6 +336,7 @@ body { padding-bottom: 64px; }
 <!-- ── Toast ──────────────────────────────────────────────────────────────── -->
 <div class="arc-toast" id="arc-toast"></div>
 
+<script src="./supabase.js"></script>
 <script>
 let DB = null;
 let activeCat = 'all';
@@ -642,7 +643,6 @@ async function deleteViaAPI(ids, token) {
   }
 }
 </script>
-<script src="./supabase.js"></script>
 <script src="./nav.js"></script>
 </body>
 </html>
