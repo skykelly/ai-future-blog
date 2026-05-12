@@ -618,9 +618,7 @@ const hideTip = ()  => ttEl.classList.remove('show');
 ══════════════════════════════════════════════════════ */
 async function loadCases() {
   try {
-    const res = await fetch('./data/cases.json');
-    if (!res.ok) throw new Error();
-    const db = await res.json();
+    const db = await fetchDB();
 
     const cases = [...db.cases]
       .sort((a, b) => (b.published_date||b.added_date||'').localeCompare(a.published_date||a.added_date||''))
@@ -769,5 +767,6 @@ function hash(s) {
 
 loadCases();
 </script>
+<script src="./supabase.js"></script>
 </body>
 </html>

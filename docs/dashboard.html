@@ -243,8 +243,7 @@ let activeCard = null;
 
 async function loadData() {
   try {
-    const res = await fetch('./data/cases.json');
-    DB = await res.json();
+    DB = await fetchDB();
     document.getElementById('last-updated').textContent =
       'Updated: ' + new Date(DB.meta.last_updated).toLocaleDateString('ko-KR') +
       ` (${DB.meta.total_cases}개 아티클)`;
@@ -252,7 +251,7 @@ async function loadData() {
     selCat(Object.keys(DB.categories)[0]);
   } catch(e) {
     document.getElementById('center').innerHTML =
-      '<div class="loading">데이터 로드 실패. cases.json을 확인하세요.</div>';
+      `<div class="loading">데이터 로드 실패: ${e.message}</div>`;
   }
 }
 
@@ -401,6 +400,7 @@ function closeDet() {
 
 loadData();
 </script>
+<script src="./supabase.js"></script>
 <script src="./nav.js"></script>
 </body>
 </html>

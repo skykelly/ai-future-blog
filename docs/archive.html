@@ -287,11 +287,11 @@ body { padding-bottom: 64px; }
 
 <!-- ── Token notice (미설정 시 표시) ─────────────────────────────────────── -->
 <div class="token-notice" id="token-notice" onclick="showTokenForm()">
-  🔑 삭제 기능을 사용하려면 GitHub 토큰이 필요합니다 — 클릭해서 설정하세요
+  🔑 삭제 기능을 사용하려면 Supabase service_role 키가 필요합니다 — 클릭해서 설정하세요
 </div>
 <div class="token-form" id="token-form">
   <span class="token-form-label">GitHub PAT</span>
-  <input type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+  <input type="password" id="pat-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
          onkeydown="if(event.key==='Enter') savePAT()">
   <button class="btn btn-primary btn-sm" onclick="savePAT()">저장</button>
   <button class="btn btn-ghost btn-sm" onclick="hideTokenForm()">취소</button>
@@ -357,9 +357,7 @@ function hideTip()     { ttEl.classList.remove('show'); }
 // ── Load data ─────────────────────────────────────────────────────────────────
 async function load() {
   try {
-    const res = await fetch('./data/cases.json');
-    if (!res.ok) throw new Error(res.status);
-    DB = await res.json();
+    DB = await fetchDB();
     buildFilters();
     render('all');
     document.getElementById('hd-sub').textContent =
@@ -368,7 +366,7 @@ async function load() {
       '최종 갱신 ' + new Date(DB.meta.last_updated).toLocaleDateString('ko-KR');
   } catch(e) {
     document.getElementById('grid').innerHTML =
-      '<div class="empty">데이터 로드 실패. articles.json을 확인하세요.</div>';
+      `<div class="empty">데이터 로드 실패: ${e.message}</div>`;
   }
 }
 
@@ -554,10 +552,8 @@ function makeCard(c) {
 
 load();
 
-/* PAT — articles.html과 동일한 localStorage 키(gh_pat) 공유 */
-const PAT_KEY = 'gh_pat';
-const REPO    = 'skykelly/ai-future-blog';
-function getPAT() { return localStorage.getItem(PAT_KEY) || ''; }
+/* Supabase service_role key (localStorage) — reads use hardcoded anon key */
+function getPAT() { return getServiceKey(); }
 
 function updateTokenUI() {
   const hasToken = !!getPAT();
@@ -576,10 +572,10 @@ function hideTokenForm() {
 function savePAT() {
   const v = document.getElementById('pat-input').value.trim();
   if (!v) return;
-  localStorage.setItem(PAT_KEY, v);
+  localStorage.setItem(SB_KEY_STORE, v);
   document.getElementById('pat-input').value = '';
   updateTokenUI();
-  arcToast('✓ 토큰이 저장됐습니다');
+  arcToast('✓ Supabase 키가 저장됐습니다');
 }
 updateTokenUI();
 
@@ -636,35 +632,9 @@ async function confirmYes() {
 }
 
 async function deleteViaAPI(ids, token) {
-  const paths = ['docs/data/cases.json'];
   try {
-    for (const path of paths) {
-      const metaRes = await fetch(
-        `https://api.github.com/repos/${REPO}/contents/${path}`,
-        { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
-      );
-      if (!metaRes.ok) throw new Error(`읽기 실패: ${path} (${metaRes.status})`);
-      const meta = await metaRes.json();
-
-      const db = JSON.parse(atob(meta.content.replace(/\s/g, '')));
-      db.cases = db.cases.filter(c => !ids.includes(c.id));
-      db.meta.total_cases  = db.cases.length;
-      db.meta.last_updated = new Date().toISOString();
-
-      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(db, null, 2))));
-      const putRes = await fetch(
-        `https://api.github.com/repos/${REPO}/contents/${path}`,
-        {
-          method: 'PUT',
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28' },
-          body: JSON.stringify({ message: `chore(articles): delete [${ids.join(',')}] [manual]`, content: encoded, sha: meta.sha, branch: 'main' }),
-        }
-      );
-      if (!putRes.ok) {
-        const err = await putRes.json().catch(() => ({}));
-        throw new Error(err.message || `저장 실패 (${putRes.status})`);
-      }
-    }
+    const ok = await supabaseDelete(ids, token);
+    if (!ok) throw new Error('Supabase DELETE 실패');
     return true;
   } catch(e) {
     arcToast(`❌ ${e.message}`);
@@ -672,6 +642,7 @@ async function deleteViaAPI(ids, token) {
   }
 }
 </script>
+<script src="./supabase.js"></script>
 <script src="./nav.js"></script>
 </body>
 </html>
