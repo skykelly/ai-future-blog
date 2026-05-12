@@ -45,25 +45,14 @@ jobs:
             --url "${{ github.event.inputs.url }}" \
             --category-hint "${{ github.event.inputs.category_hint }}"
 
-      - name: Commit
+      - name: Verify insert
         run: |
-          git config user.name  "Life After AI Bot"
-          git config user.email "bot@life-after-ai.internal"
-          git add docs/data/cases.json
-          if git diff --cached --quiet; then
-            echo "추가할 아티클이 없습니다."
-          else
-            TITLE=$(python3 -c "
-          import json, sys
-          url = '${{ github.event.inputs.url }}'
-          d = json.load(open('docs/data/cases.json'))
-          cases = [c for c in d['cases'] if c['url'] == url]
-          print(cases[0]['title'] if cases else 'article')
-          " 2>/dev/null || echo 'article')
-            git commit -m "feat(article): ${TITLE} [manual]"
-            git pull --rebase origin main
-            git push
-          fi
+          python3 -c "
+          import os, sys
+          sys.path.insert(0, 'scraper')
+          from supabase_client import get_total_count
+          print(f'Supabase 총 아티클: {get_total_count()}개')
+          " || echo "Supabase 카운트 확인 실패"
 
       - name: Upload log
         if: always()

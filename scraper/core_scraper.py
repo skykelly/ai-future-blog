@@ -37,6 +37,16 @@ def load_sources() -> list[dict]:
 
 
 def load_existing_urls() -> set[str]:
+    """Return URLs already in DB (Supabase primary, JSON fallback)."""
+    try:
+        from supabase_client import is_configured, get_existing_urls
+        if is_configured():
+            urls = get_existing_urls()
+            log.info(f"기존 URL {len(urls)}개 (Supabase)")
+            return urls
+    except Exception as e:
+        log.warning(f"Supabase URL 조회 실패, JSON fallback: {e}")
+    # JSON fallback
     try:
         with open(DATA_FILE) as f:
             db = json.load(f)

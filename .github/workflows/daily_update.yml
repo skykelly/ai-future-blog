@@ -53,18 +53,21 @@ jobs:
           mkdir -p docs/data
           cp scraper/sources.json docs/data/sources.json
 
-      # ── Commit if anything changed ───────────────────────────────────────────
+      # ── Commit if sources changed ─────────────────────────────────────────────
       - name: Commit changes
         if: github.event.inputs.dry_run != 'true'
         run: |
           git config user.name  "Life After AI Bot"
           git config user.email "bot@life-after-ai.internal"
-          git add docs/data/cases.json docs/data/sources.json
-          COUNT=$(python3 -c "import json; d=json.load(open('docs/data/cases.json')); print(len(d['cases']))")
+          git add docs/data/sources.json
+          COUNT=$(python3 -c "
+          from supabase_client import get_total_count
+          print(get_total_count())
+          " 2>/dev/null || echo '?')
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore: daily update — ${COUNT} articles [$(date +'%Y-%m-%d KST')]"
+            git commit -m "chore: sync sources — Supabase ${COUNT}개 아티클 [$(date +'%Y-%m-%d KST')]"
             git pull --rebase origin main
             git push
           fi
