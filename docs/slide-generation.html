@@ -283,27 +283,33 @@ body { padding-bottom: 80px; font-size: 14px; }
 
 /* ── Style chips ──────────────────────────────────────────── */
 .style-chips {
-  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px;
 }
 .style-chip {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 10px 16px; border-radius: 10px;
-  border: 1.5px solid var(--hairline);
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+  width: 120px; border-radius: 10px;
+  border: 2px solid var(--hairline);
   background: var(--canvas); cursor: pointer;
-  transition: all .14s; user-select: none; min-width: 72px;
+  transition: all .14s; user-select: none;
+  overflow: hidden;
 }
-.style-chip:hover {
-  border-color: var(--primary);
-  background: rgba(204,120,92,.06);
-}
+.style-chip:hover { border-color: var(--primary-active); }
 .style-chip.on {
   border-color: var(--primary);
-  background: rgba(204,120,92,.10);
-  box-shadow: 0 0 0 3px rgba(204,120,92,.14);
+  box-shadow: 0 0 0 3px rgba(204,120,92,.18);
 }
-.style-chip-emoji { font-size: 20px; line-height: 1; }
-.style-chip-label { font-size: 11px; font-weight: 600; color: var(--body); white-space: nowrap; }
-.style-chip.on .style-chip-label { color: var(--primary); }
+.style-chip-thumb {
+  width: 120px; height: 80px;
+  object-fit: cover; display: block; flex-shrink: 0;
+}
+.style-chip-label {
+  width: 100%; text-align: center;
+  font-size: 11px; font-weight: 600; color: var(--body);
+  padding: 6px 4px; line-height: 1.2;
+  background: var(--surface-cream-strong);
+  border-top: 0.5px solid var(--hairline);
+}
+.style-chip.on .style-chip-label { color: var(--primary); background: rgba(204,120,92,.10); }
 
 /* ── Server badge ─────────────────────────────────────────── */
 .server-badge {
@@ -417,30 +423,30 @@ body { padding-bottom: 80px; font-size: 14px; }
     <!-- 맞춤 프롬프트 -->
     <div style="margin-top:18px">
       <label class="gen-label">맞춤 프롬프트 <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted-soft)">(슬라이드 스타일 설명)</span></label>
-      <textarea class="batch-ta" id="custom-prompt" style="height:96px;margin-bottom:10px"
+      <textarea class="scenario-input" id="custom-prompt" style="min-height:96px;margin-bottom:14px"
         >업로드된 소스 내용을 바탕으로, 슬라이드 전체를 흥미진진한 만화 형식으로 만들어줘. 각 슬라이드는 개별 만화 컷처럼 레이아웃을 구성하고, 캐릭터들이 대화하는 듯한 형식과 시각적 효과를 포함해줘. 청중이 영화를 보는 것처럼 느낄 수 있게 해줘.</textarea>
 
       <!-- 스타일 선택 버튼 -->
-      <label class="gen-label" style="margin-bottom:8px">비주얼 스타일 <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted-soft)">(선택 시 프롬프트에 추가)</span></label>
+      <label class="gen-label" style="margin-bottom:10px">비주얼 스타일 <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted-soft)">(선택 시 프롬프트에 추가)</span></label>
       <div class="style-chips" id="style-chips">
         <div class="style-chip" data-style="animation" onclick="selStyle(this)">
-          <span class="style-chip-emoji">🌸</span>
+          <img class="style-chip-thumb" src="./src/assets/1.png" alt="애니메이션">
           <span class="style-chip-label">애니메이션</span>
         </div>
         <div class="style-chip" data-style="pixar" onclick="selStyle(this)">
-          <span class="style-chip-emoji">🎬</span>
+          <img class="style-chip-thumb" src="./src/assets/2.png" alt="픽사">
           <span class="style-chip-label">픽사</span>
         </div>
         <div class="style-chip" data-style="ghibli" onclick="selStyle(this)">
-          <span class="style-chip-emoji">🌿</span>
+          <img class="style-chip-thumb" src="./src/assets/3.png" alt="지브리">
           <span class="style-chip-label">지브리</span>
         </div>
         <div class="style-chip" data-style="webtoon" onclick="selStyle(this)">
-          <span class="style-chip-emoji">⚡</span>
+          <img class="style-chip-thumb" src="./src/assets/4.png" alt="웹툰">
           <span class="style-chip-label">웹툰</span>
         </div>
         <div class="style-chip" data-style="3d" onclick="selStyle(this)">
-          <span class="style-chip-emoji">🎭</span>
+          <img class="style-chip-thumb" src="./src/assets/5.png" alt="3D 캐릭터">
           <span class="style-chip-label">3D 캐릭터</span>
         </div>
       </div>
