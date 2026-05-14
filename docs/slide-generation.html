@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미래의 모습 — Life After AI</title>
+<link rel="stylesheet" href="./shared.css">
+<style>
+body { padding-bottom: 80px; font-size: 14px; }
+
+/* ── Page header ──────────────────────────────────────────── */
+.page-hd {
+  padding: 18px 28px 14px;
+  border-bottom: 0.5px solid var(--hairline);
+  background: var(--canvas);
+  position: sticky; top: 64px; z-index: 30;
+  backdrop-filter: blur(12px);
+}
+.page-hd-title {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 400; letter-spacing: -0.03em;
+  color: var(--ink); margin-bottom: 3px;
+}
+.page-hd-sub {
+  font-size: 13px; color: var(--muted-soft);
+}
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+.top-tabs {
+  display: flex; padding: 0 28px;
+  border-bottom: 0.5px solid var(--hairline);
+  background: var(--canvas);
+  position: sticky; top: 117px; z-index: 29;
+}
+.top-tab {
+  font-size: 13px; font-weight: 500; padding: 11px 18px; cursor: pointer;
+  border-bottom: 2px solid transparent; color: var(--muted);
+  transition: all .12s; user-select: none;
+}
+.top-tab:hover { color: var(--ink); }
+.top-tab.on    { color: var(--ink); border-bottom-color: var(--primary); }
+
+/* ── Panels ───────────────────────────────────────────────── */
+.panel { display: none; }
+.panel.on { display: block; }
+
+/* ══════════════════════════════════════════════════════════
+   PANEL: 슬라이드 생성
+══════════════════════════════════════════════════════════ */
+#panel-generate {
+  max-width: 720px;
+  padding: 32px 28px;
+}
+
+.gen-card {
+  background: var(--surface-card);
+  border: 0.5px solid var(--hairline);
+  border-radius: 14px;
+  padding: 28px;
+  margin-bottom: 16px;
+}
+
+.gen-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 8px; display: block;
+}
+
+/* 시나리오 입력 */
+.scenario-wrap {
+  position: relative;
+}
+.scenario-input {
+  width: 100%;
+  min-height: 180px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.7;
+  resize: vertical;
+  outline: none;
+  transition: border-color .14s, box-shadow .14s;
+  box-sizing: border-box;
+}
+.scenario-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(204,120,92,.12);
+}
+.scenario-input::placeholder { color: var(--muted-soft); }
+.scenario-char {
+  position: absolute; bottom: 10px; right: 14px;
+  font-size: 11px; color: var(--muted-soft);
+  pointer-events: none;
+}
+
+/* 옵션 행 */
+.gen-opts {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;
+}
+.gen-opt-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 140px; }
+.gen-opt-select {
+  padding: 8px 12px;
+  border: 1px solid var(--hairline); border-radius: 8px;
+  background: var(--canvas); color: var(--ink);
+  font-family: var(--font); font-size: 13px;
+  outline: none; cursor: pointer;
+  transition: border-color .12s;
+}
+.gen-opt-select:focus { border-color: var(--primary); }
+
+/* CTA 버튼 영역 */
+.gen-cta {
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 22px; flex-wrap: wrap;
+}
+.btn-generate {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-family: var(--font); font-size: 15px; font-weight: 600;
+  padding: 13px 28px; border-radius: 10px;
+  background: var(--primary); color: var(--on-primary);
+  border: none; cursor: pointer;
+  transition: background .14s, transform .1s, box-shadow .14s;
+  box-shadow: 0 4px 14px rgba(204,120,92,.28);
+}
+.btn-generate:hover {
+  background: var(--primary-active);
+  box-shadow: 0 6px 20px rgba(204,120,92,.36);
+}
+.btn-generate:active { transform: scale(.98); }
+.btn-generate:disabled {
+  opacity: .45; cursor: not-allowed;
+  box-shadow: none; transform: none;
+}
+.btn-generate .btn-icon { font-size: 18px; line-height: 1; }
+
+.gen-hint {
+  font-size: 12px; color: var(--muted-soft); line-height: 1.6;
+}
+
+/* 생성 상태 카드 */
+.gen-status {
+  display: none;
+  background: var(--surface-soft);
+  border: 0.5px solid var(--hairline);
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-top: 16px;
+}
+.gen-status.show { display: block; }
+
+.gen-status-row {
+  display: flex; align-items: center; gap: 12px;
+}
+.gen-spinner {
+  width: 22px; height: 22px; flex-shrink: 0;
+  border: 2.5px solid var(--hairline);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.gen-status-msg { font-size: 14px; color: var(--ink); font-weight: 500; }
+.gen-status-sub { font-size: 12px; color: var(--muted-soft); margin-top: 3px; }
+
+.gen-status-steps {
+  margin-top: 14px; padding-top: 14px;
+  border-top: 0.5px solid var(--hairline);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.step-row {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--muted-soft);
+}
+.step-row.done   { color: var(--g3); }
+.step-row.active { color: var(--ink); font-weight: 500; }
+.step-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  background: var(--hairline-soft);
+}
+.step-row.done   .step-dot { background: var(--g3); }
+.step-row.active .step-dot { background: var(--primary); box-shadow: 0 0 0 3px rgba(204,120,92,.22); }
+
+/* 예시 프롬프트 */
+.example-prompts {
+  margin-top: 8px;
+}
+.example-title {
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  letter-spacing: .05em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.example-chips {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.example-chip {
+  font-size: 12px; padding: 6px 14px; border-radius: 9999px;
+  border: 0.5px solid var(--hairline);
+  background: var(--canvas); color: var(--body);
+  cursor: pointer; transition: all .12s; user-select: none;
+  white-space: nowrap;
+}
+.example-chip:hover {
+  border-color: var(--primary);
+  background: rgba(204,120,92,.06);
+  color: var(--primary);
+}
+
+/* ══════════════════════════════════════════════════════════
+   PANEL: 슬라이드 목록
+══════════════════════════════════════════════════════════ */
+#panel-archive { padding: 28px; }
+
+.archive-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+}
+.archive-count { font-size: 13px; color: var(--muted-soft); }
+.archive-count strong { color: var(--ink); }
+
+.slide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+/* 슬라이드 카드 */
+.slide-card {
+  background: var(--surface-card);
+  border: 0.5px solid var(--hairline);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow .14s, transform .14s, border-color .12s;
+  cursor: pointer;
+}
+.slide-card:hover {
+  box-shadow: 0 8px 24px rgba(20,20,19,.09);
+  transform: translateY(-2px);
+  border-color: var(--hairline-soft);
+}
+.slide-thumb {
+  aspect-ratio: 16/9;
+  background: var(--surface-soft);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; color: var(--muted-soft);
+  border-bottom: 0.5px solid var(--hairline);
+}
+.slide-body { padding: 14px 16px 12px; }
+.slide-title {
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  line-height: 1.35; margin-bottom: 5px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.slide-meta { font-size: 11px; color: var(--muted-soft); }
+.slide-foot {
+  padding: 10px 16px;
+  border-top: 0.5px solid var(--hairline);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface-cream-strong);
+}
+.slide-cat {
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+}
+.slide-dl {
+  font-size: 12px; font-weight: 500; color: var(--primary);
+  text-decoration: none; display: flex; align-items: center; gap: 4px;
+}
+.slide-dl:hover { color: var(--primary-active); }
+
+/* 빈 상태 */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--muted-soft);
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: .5; }
+.empty-title { font-size: 16px; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
+.empty-sub { font-size: 13px; line-height: 1.65; }
+
+/* ── Toast ────────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--surface-dark); color: var(--on-dark);
+  font-size: 12px; padding: 10px 18px; border-radius: 9999px;
+  opacity: 0; transition: opacity .2s; pointer-events: none;
+  white-space: nowrap; z-index: 600;
+  box-shadow: 0 8px 24px rgba(20,20,19,.28);
+  border: 0.5px solid rgba(255,255,255,.08);
+}
+.toast.show { opacity: 1; }
+
+@media (max-width: 640px) {
+  #panel-generate { padding: 20px 16px; }
+  #panel-archive  { padding: 16px; }
+  .top-tabs, .page-hd { padding-left: 16px; padding-right: 16px; }
+  .slide-grid { grid-template-columns: 1fr; }
+  .gen-opts { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Page header ──────────────────────────────────────────────────────────── -->
+<div class="page-hd">
+  <div class="page-hd-title">AI 생활 변화 Visualization</div>
+  <div class="page-hd-sub">고객의 생활 변화 시나리오를 시각화 합니다.</div>
+</div>
+
+<!-- ── Tabs ─────────────────────────────────────────────────────────────────── -->
+<div class="top-tabs">
+  <div class="top-tab on" id="tab-generate" onclick="selTab('generate')">슬라이드 생성</div>
+  <div class="top-tab"    id="tab-archive"  onclick="selTab('archive')">슬라이드 목록</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     Panel: 슬라이드 생성
+════════════════════════════════════════════════════════ -->
+<div class="panel on" id="panel-generate">
+
+  <div class="gen-card">
+    <label class="gen-label">생활 변화 시나리오</label>
+    <div class="scenario-wrap">
+      <textarea class="scenario-input" id="scenario-input"
+                placeholder="시각화할 생활 변화 시나리오를 입력하세요.
+예) 2030년, AI 에이전트가 가족의 아침 루틴을 자동으로 조율하는 하루를 슬라이드로 만들어줘.
+    Autonomous Home 카테고리를 중심으로 LG전자의 기회 요인을 포함해줘."
+                oninput="onScenarioInput()" maxlength="2000"></textarea>
+      <span class="scenario-char" id="char-count">0 / 2000</span>
+    </div>
+
+    <!-- 옵션 -->
+    <div class="gen-opts">
+      <div class="gen-opt-group">
+        <label class="gen-label" style="margin-bottom:0">카테고리 포커스</label>
+        <select class="gen-opt-select" id="opt-category">
+          <option value="">전체 (자동)</option>
+          <optgroup label="생활 공간 변화">
+            <option value="1-1">1-1 Autonomous Home</option>
+            <option value="1-2">1-2 Wellness Home</option>
+            <option value="1-3">1-3 Energy Optimized Home</option>
+          </optgroup>
+          <optgroup label="소비 행동 변화">
+            <option value="2-1">2-1 Agentic Commerce</option>
+            <option value="2-2">2-2 Service-as-Living</option>
+          </optgroup>
+          <optgroup label="개인 생활 운영 변화">
+            <option value="3-1">3-1 Personal AI Agent</option>
+            <option value="3-2">3-2 Hyper-Capability</option>
+          </optgroup>
+          <optgroup label="관계·돌봄 변화">
+            <option value="4-1">4-1 AI Companion</option>
+            <option value="4-2">4-2 Remote Senior &amp; Pet Care</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="gen-opt-group">
+        <label class="gen-label" style="margin-bottom:0">슬라이드 수</label>
+        <select class="gen-opt-select" id="opt-slides">
+          <option value="8">8 슬라이드</option>
+          <option value="12" selected>12 슬라이드</option>
+          <option value="16">16 슬라이드</option>
+          <option value="20">20 슬라이드</option>
+        </select>
+      </div>
+      <div class="gen-opt-group">
+        <label class="gen-label" style="margin-bottom:0">언어</label>
+        <select class="gen-opt-select" id="opt-lang">
+          <option value="ko" selected>한국어</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="gen-cta">
+      <button class="btn-generate" id="btn-generate" onclick="startGenerate()" disabled>
+        <span class="btn-icon">✦</span>
+        슬라이드 생성
+      </button>
+      <div class="gen-hint">
+        NotebookLM이 리서치 DB를 기반으로 PDF 슬라이드를 생성합니다.<br>
+        완료 후 자동으로 슬라이드 목록에 저장됩니다.
+      </div>
+    </div>
+
+    <!-- 생성 진행 상태 -->
+    <div class="gen-status" id="gen-status">
+      <div class="gen-status-row">
+        <div class="gen-spinner" id="gen-spinner"></div>
+        <div>
+          <div class="gen-status-msg" id="gen-status-msg">슬라이드를 생성하는 중입니다...</div>
+          <div class="gen-status-sub" id="gen-status-sub">약 1~2분 소요됩니다</div>
+        </div>
+      </div>
+      <div class="gen-status-steps">
+        <div class="step-row" id="step-1">
+          <div class="step-dot"></div>시나리오 분석 및 아웃라인 생성
+        </div>
+        <div class="step-row" id="step-2">
+          <div class="step-dot"></div>NotebookLM 노트북 준비
+        </div>
+        <div class="step-row" id="step-3">
+          <div class="step-dot"></div>슬라이드 콘텐츠 생성
+        </div>
+        <div class="step-row" id="step-4">
+          <div class="step-dot"></div>PDF 변환 및 다운로드 준비
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 예시 프롬프트 -->
+  <div class="example-prompts">
+    <div class="example-title">예시 시나리오</div>
+    <div class="example-chips">
+      <div class="example-chip" onclick="setExample(this)">2030년 AI가 운영하는 아침 루틴</div>
+      <div class="example-chip" onclick="setExample(this)">에이전트가 대신하는 가전 구매 여정</div>
+      <div class="example-chip" onclick="setExample(this)">혼자 사는 시니어의 AI 동반자 하루</div>
+      <div class="example-chip" onclick="setExample(this)">에너지 자율 최적화 홈의 하루</div>
+      <div class="example-chip" onclick="setExample(this)">AI 개인 에이전트가 조율하는 가족 일정</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     Panel: 슬라이드 목록
+════════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-archive">
+
+  <div class="archive-toolbar">
+    <div class="archive-count" id="archive-count">
+      <strong>0</strong>개 슬라이드
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="selTab('generate')">+ 새 슬라이드 생성</button>
+  </div>
+
+  <div class="slide-grid" id="slide-grid">
+    <div class="empty-state">
+      <div class="empty-icon">🎞</div>
+      <div class="empty-title">아직 생성된 슬라이드가 없습니다</div>
+      <div class="empty-sub">
+        슬라이드 생성 탭에서 시나리오를 입력하고<br>
+        생성 버튼을 눌러 첫 번째 슬라이드를 만들어 보세요.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Toast ─────────────────────────────────────────────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<script src="./supabase.js"></script>
+<script>
+/* ── Tab switcher ─────────────────────────────────────────── */
+function selTab(name) {
+  ['generate','archive'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('on', t === name);
+    document.getElementById('panel-' + t).classList.toggle('on', t === name);
+  });
+  if (name === 'archive') loadArchive();
+}
+
+/* ── Scenario input ───────────────────────────────────────── */
+function onScenarioInput() {
+  const ta  = document.getElementById('scenario-input');
+  const len = ta.value.length;
+  document.getElementById('char-count').textContent = `${len} / 2000`;
+  document.getElementById('btn-generate').disabled = len < 10;
+  document.getElementById('gen-status').classList.remove('show');
+}
+
+function setExample(el) {
+  const ta = document.getElementById('scenario-input');
+  ta.value = el.textContent;
+  onScenarioInput();
+  ta.focus();
+}
+
+/* ── Slide generation ─────────────────────────────────────── */
+const STEPS = ['step-1','step-2','step-3','step-4'];
+
+function setStep(idx) {
+  STEPS.forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.classList.remove('done','active');
+    if (i < idx)  el.classList.add('done');
+    if (i === idx) el.classList.add('active');
+  });
+}
+
+function setStatusMsg(msg, sub) {
+  document.getElementById('gen-status-msg').textContent = msg;
+  document.getElementById('gen-status-sub').textContent = sub || '';
+}
+
+async function startGenerate() {
+  const scenario = document.getElementById('scenario-input').value.trim();
+  if (scenario.length < 10) return;
+
+  const category  = document.getElementById('opt-category').value;
+  const slideCount = document.getElementById('opt-slides').value;
+  const lang      = document.getElementById('opt-lang').value;
+
+  // UI: 생성 시작
+  document.getElementById('btn-generate').disabled = true;
+  const status = document.getElementById('gen-status');
+  status.classList.add('show');
+  document.getElementById('gen-spinner').style.display = 'block';
+
+  try {
+    setStep(0);
+    setStatusMsg('시나리오를 분석하는 중...', '아웃라인을 구성합니다');
+    await delay(800);
+
+    setStep(1);
+    setStatusMsg('NotebookLM 노트북을 준비하는 중...', '리서치 DB를 연결합니다');
+    await delay(600);
+
+    setStep(2);
+    setStatusMsg('슬라이드 콘텐츠를 생성하는 중...', `${slideCount}개 슬라이드 작성 중`);
+    // TODO: NotebookLM MCP 연동
+    // const result = await callNotebookLM({ scenario, category, slideCount, lang });
+    await delay(1000);
+
+    setStep(3);
+    setStatusMsg('PDF로 변환하는 중...', '완료 후 자동 저장됩니다');
+    await delay(800);
+
+    // 완료 처리 (임시 — NotebookLM 연동 후 실제 결과로 교체)
+    STEPS.forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('active');
+      el.classList.add('done');
+    });
+    document.getElementById('gen-spinner').style.display = 'none';
+    setStatusMsg('✓ 생성 완료', '슬라이드 목록에서 확인하세요');
+
+    // 아카이브에 임시 저장
+    saveToArchive({
+      title: scenario.slice(0, 60) + (scenario.length > 60 ? '…' : ''),
+      category: category || 'auto',
+      slideCount: parseInt(slideCount),
+      lang,
+      createdAt: new Date().toISOString(),
+    });
+
+    toast('슬라이드 생성 완료 — 슬라이드 목록에서 확인하세요');
+    setTimeout(() => selTab('archive'), 1800);
+
+  } catch (e) {
+    setStatusMsg('❌ 생성 실패', e.message);
+    toast('생성에 실패했습니다: ' + e.message);
+  } finally {
+    document.getElementById('btn-generate').disabled = false;
+  }
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ── Archive (localStorage 임시 저장) ─────────────────────── */
+const STORE_KEY = 'laf_slides';
+
+function getSlides() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch { return []; }
+}
+function saveSlides(arr) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(arr));
+}
+function saveToArchive(slide) {
+  const arr = getSlides();
+  arr.unshift({ id: Date.now(), ...slide });
+  saveSlides(arr);
+}
+
+function loadArchive() {
+  const slides = getSlides();
+  const grid   = document.getElementById('slide-grid');
+  const count  = document.getElementById('archive-count');
+  count.innerHTML = `<strong>${slides.length}</strong>개 슬라이드`;
+
+  if (!slides.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🎞</div>
+        <div class="empty-title">아직 생성된 슬라이드가 없습니다</div>
+        <div class="empty-sub">
+          슬라이드 생성 탭에서 시나리오를 입력하고<br>
+          생성 버튼을 눌러 첫 번째 슬라이드를 만들어 보세요.
+        </div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = slides.map(s => slideCard(s)).join('');
+}
+
+const CAT_G = { '1':'g1','2':'g2','3':'g3','4':'g4','auto':'' };
+
+function slideCard(s) {
+  const date = new Date(s.createdAt).toLocaleDateString('ko-KR', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  const g    = CAT_G[s.category.split('-')[0]] || '';
+  const cat  = s.category === 'auto' ? 'AUTO' : s.category;
+  return `
+  <div class="slide-card">
+    <div class="slide-thumb">🎞</div>
+    <div class="slide-body">
+      <div class="slide-title">${esc(s.title)}</div>
+      <div class="slide-meta">${s.slideCount}슬라이드 · ${s.lang === 'ko' ? '한국어' : 'English'} · ${date}</div>
+    </div>
+    <div class="slide-foot">
+      <span class="slide-cat ${g}">${esc(cat)}</span>
+      <a class="slide-dl" href="#" onclick="downloadSlide(${s.id}); return false;">
+        ↓ 다운로드
+      </a>
+    </div>
+  </div>`;
+}
+
+function downloadSlide(id) {
+  // TODO: NotebookLM MCP 연동 후 실제 PDF 다운로드
+  toast('NotebookLM 연동 후 다운로드가 활성화됩니다');
+}
+
+function deleteSlide(id) {
+  const arr = getSlides().filter(s => s.id !== id);
+  saveSlides(arr);
+  loadArchive();
+  toast('삭제됐습니다');
+}
+
+/* ── Toast ────────────────────────────────────────────────── */
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+/* ── Escape ───────────────────────────────────────────────── */
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+<script src="./nav.js"></script>
+</body>
+</html>

@@ -9,7 +9,8 @@
     { file: 'dashboard.html', label: '리서치 맵' },
     { file: 'archive.html',   label: '아티클' },
     { file: 'articles.html',  label: '아티클 관리' },
-    { file: 'trinity.html',   label: 'Trinity Eye' },
+    { file: 'trinity.html',          label: 'Trinity Eye' },
+    { file: 'slide-generation.html', label: '미래의 모습' },
   ];
 
   const current = location.pathname.split('/').pop() || 'index.html';
