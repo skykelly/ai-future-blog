@@ -93,16 +93,15 @@ def analyze_gaps() -> list[dict]:
 def _make_search_query(tag: str, categories: list[str]) -> str:
     """Build a targeted web-search query for finding sources on this topic."""
     cat_names = {
-        "1-1": "customer acquisition",
-        "1-2": "sales conversion",
-        "1-3": "upsell average order value",
-        "1-4": "customer retention churn LTV",
-        "1-5": "new revenue model",
-        "2-1": "marketing cost reduction",
-        "2-2": "sales productivity",
-        "2-3": "customer service automation",
-        "2-4": "demand forecasting operations",
-        "2-5": "brand risk VOC",
+        "1-1": "autonomous home smart home AI automation",
+        "1-2": "wellness home health sleep air quality",
+        "1-3": "home energy optimization HEMS electricity cost",
+        "2-1": "agentic commerce AI shopping agent autonomous purchase",
+        "2-2": "service as living subscription rental predictive maintenance",
+        "3-1": "personal AI agent life management task delegation",
+        "3-2": "hyper capability AI productivity literacy work",
+        "4-1": "AI companion emotional support loneliness",
+        "4-2": "remote senior pet care elder care fall detection",
     }
     primary_cat = max(set(categories), key=categories.count)
     ctx = cat_names.get(primary_cat, "AI business case study")

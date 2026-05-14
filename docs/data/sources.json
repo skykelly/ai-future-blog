@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.2",
-    "description": "Life After AI — AI-driven Living, Commerce, Care & Relationship Research Sources",
-    "last_updated": "2026-05-11",
+    "description": "Life After AI — AI-driven Living, Commerce, Personal Operating & Care Research Sources",
+    "last_updated": "2026-05-14",
     "total_sources": 21,
     "review_basis": "Rebuilt from uploaded LGE AX Benchmark sources to match Life After AI article categories and case DB. Sources are intended for article discovery/search and periodic monitoring."
   },
@@ -14,11 +14,10 @@
       "rss": null,
       "type": "company",
       "expected_tags": [
-        "AI Home",
+        "Autonomous Home",
         "Smart Home",
         "Gemini",
-        "Home Assistant",
-        "Autonomous Home"
+        "Home Assistant"
       ],
       "categories": [
         "1-1",
@@ -37,7 +36,7 @@
       "rss": null,
       "type": "company_docs",
       "expected_tags": [
-        "AI Home",
+        "Autonomous Home",
         "Gemini for Home",
         "availability",
         "voice assistant"
@@ -59,7 +58,7 @@
       "type": "company",
       "expected_tags": [
         "Alexa+",
-        "AI Assistant",
+        "Personal AI Agent",
         "Smart Home",
         "Voice AI",
         "Agentic AI"
@@ -81,7 +80,7 @@
       "rss": "https://www.theverge.com/rss/smart-home/index.xml",
       "type": "trade",
       "expected_tags": [
-        "AI Home",
+        "Autonomous Home",
         "Smart Home",
         "Matter",
         "Home Automation",
@@ -91,7 +90,7 @@
         "1-1",
         "1-2",
         "1-3",
-        "4-2"
+        "4-1"
       ],
       "priority": "high",
       "active": true,
@@ -105,17 +104,15 @@
       "rss": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
       "type": "trade",
       "expected_tags": [
-        "AI Assistant",
+        "Personal AI Agent",
         "Agentic AI",
-        "Companion",
-        "Emotional AI",
+        "AI Companion",
         "AI Commerce"
       ],
       "categories": [
         "2-1",
         "3-1",
-        "4-1",
-        "4-2"
+        "4-1"
       ],
       "priority": "high",
       "active": true,
@@ -129,10 +126,10 @@
       "rss": null,
       "type": "news",
       "expected_tags": [
-        "AI Shopping",
+        "Service-as-Living",
         "Agentic Commerce",
-        "AI Assistant",
-        "Emotional AI",
+        "Personal AI Agent",
+        "AI Companion",
         "Big Tech"
       ],
       "categories": [
@@ -155,15 +152,14 @@
       "rss": null,
       "type": "news",
       "expected_tags": [
-        "AI Shopping",
+        "Service-as-Living",
         "Retail AI",
         "Personalization",
         "Commerce"
       ],
       "categories": [
         "2-1",
-        "2-2",
-        "2-3"
+        "2-2"
       ],
       "priority": "high",
       "active": false,
@@ -256,7 +252,7 @@
       ],
       "categories": [
         "1-2",
-        "4-3"
+        "4-2"
       ],
       "priority": "medium",
       "active": true,
@@ -271,7 +267,7 @@
       "rss": null,
       "type": "academic",
       "expected_tags": [
-        "Energy Optimization",
+        "Energy Optimized Home",
         "HEMS",
         "Reinforcement Learning",
         "Smart Home Energy"
@@ -293,16 +289,14 @@
       "type": "academic",
       "expected_tags": [
         "Wellness Home",
-        "Emotional AI",
-        "Companion",
-        "Aging Society",
+        "AI Companion",
+        "Remote Senior & Pet Care",
         "Home Care"
       ],
       "categories": [
         "1-2",
         "4-1",
-        "4-2",
-        "4-3"
+        "4-2"
       ],
       "priority": "medium",
       "active": false,
@@ -318,14 +312,14 @@
       "rss": null,
       "type": "trade",
       "expected_tags": [
-        "AI Assistant",
-        "Companion",
+        "Personal AI Agent",
+        "AI Companion",
         "Senior AI",
         "Consumer AI"
       ],
       "categories": [
         "3-1",
-        "4-2"
+        "4-1"
       ],
       "priority": "medium",
       "active": true,
@@ -340,16 +334,15 @@
       "rss": null,
       "type": "vendor_research",
       "expected_tags": [
-        "Productivity Life",
+        "Hyper-Capability",
         "AI at Work",
-        "AI Assistant",
+        "Personal AI Agent",
         "Frontier Firm",
         "Copilot"
       ],
       "categories": [
         "3-1",
-        "3-2",
-        "3-3"
+        "3-2"
       ],
       "priority": "high",
       "active": true,
@@ -364,14 +357,12 @@
       "rss": null,
       "type": "research",
       "expected_tags": [
-        "Productivity Life",
+        "Hyper-Capability",
         "AI Adoption",
-        "AI at Work",
-        "Capability Divide"
+        "AI at Work"
       ],
       "categories": [
-        "3-2",
-        "3-3"
+        "3-2"
       ],
       "priority": "high",
       "active": false,
@@ -387,13 +378,13 @@
       "rss": null,
       "type": "public_research",
       "expected_tags": [
-        "Capability Divide",
+        "Hyper-Capability",
         "AI Productivity",
         "Digital Skills",
         "Policy"
       ],
       "categories": [
-        "3-3"
+        "3-2"
       ],
       "priority": "high",
       "active": false,
@@ -409,14 +400,14 @@
       "rss": null,
       "type": "public_research",
       "expected_tags": [
-        "Capability Divide",
+        "Hyper-Capability",
         "Senior AI",
         "Digital Inclusion",
         "Older Adults"
       ],
       "categories": [
-        "3-3",
-        "4-3"
+        "3-2",
+        "4-2"
       ],
       "priority": "medium",
       "active": true,
@@ -432,16 +423,16 @@
       "type": "government_statistics",
       "expected_tags": [
         "1-person Household",
-        "Aging Society",
+        "Remote Senior & Pet Care",
         "Korea",
         "Loneliness",
         "Senior Care"
       ],
       "categories": [
         "1-2",
-        "3-3",
+        "3-2",
         "4-1",
-        "4-3"
+        "4-2"
       ],
       "priority": "high",
       "active": true,
@@ -456,7 +447,7 @@
       "rss": null,
       "type": "government_policy",
       "expected_tags": [
-        "Aging Society",
+        "Remote Senior & Pet Care",
         "Elder Care",
         "Digital Health",
         "AI Care",
@@ -464,7 +455,7 @@
       ],
       "categories": [
         "1-2",
-        "4-3"
+        "4-2"
       ],
       "priority": "high",
       "active": true,
@@ -479,13 +470,13 @@
       "rss": null,
       "type": "vendor_research",
       "expected_tags": [
-        "Subscription AI",
+        "Service-as-Living",
         "Recurring Revenue",
         "Churn",
         "Hybrid Monetization"
       ],
       "categories": [
-        "2-3"
+        "2-2"
       ],
       "priority": "medium",
       "active": true,
@@ -509,8 +500,8 @@
       "categories": [
         "1-1",
         "1-2",
-        "2-3",
-        "4-3"
+        "2-2",
+        "4-2"
       ],
       "priority": "high",
       "active": true,
@@ -524,7 +515,7 @@
       "rss": null,
       "type": "vendor_research",
       "expected_tags": [
-        "AI Assistant",
+        "Personal AI Agent",
         "Consumer Trust",
         "Customer Experience",
         "Privacy"
@@ -546,14 +537,14 @@
       "rss": null,
       "type": "academic",
       "expected_tags": [
-        "Capability Divide",
+        "Hyper-Capability",
         "Older Adults",
         "AI Accessibility",
         "Korea"
       ],
       "categories": [
-        "3-3",
-        "4-3"
+        "3-2",
+        "4-2"
       ],
       "priority": "low",
       "active": true,
@@ -568,13 +559,13 @@
       "rss": null,
       "type": "news",
       "expected_tags": [
-        "Aging Society",
+        "Remote Senior & Pet Care",
         "AI Care",
         "Korea",
         "Super-aged Society"
       ],
       "categories": [
-        "4-3"
+        "4-2"
       ],
       "priority": "low",
       "active": true,
@@ -589,14 +580,12 @@
       "rss": null,
       "type": "academic",
       "expected_tags": [
-        "Emotional AI",
-        "Companion",
+        "AI Companion",
         "Well-being",
         "Loneliness"
       ],
       "categories": [
-        "4-1",
-        "4-2"
+        "4-1"
       ],
       "priority": "low",
       "active": false,
@@ -611,7 +600,7 @@
       "rss": null,
       "type": "company",
       "expected_tags": [
-        "AI Shopping",
+        "Service-as-Living",
         "Sales Assistant",
         "Retail Associate",
         "Store AI"
@@ -632,7 +621,7 @@
       "rss": null,
       "type": "company",
       "expected_tags": [
-        "Energy Optimization",
+        "Energy Optimized Home",
         "HEMS",
         "Home Battery",
         "Solar",
@@ -675,7 +664,7 @@
       "rss": null,
       "type": "news_tabloid",
       "expected_tags": [
-        "AI Shopping",
+        "Service-as-Living",
         "Retail AI",
         "Store Assistant"
       ],
@@ -727,9 +716,9 @@
   },
   "category_keywords": {
     "1-1": [
+      "autonomous home",
       "AI Home",
       "smart home",
-      "autonomous home",
       "Gemini for Home",
       "Alexa+",
       "Matter",
@@ -770,72 +759,54 @@
       "AI 구매대행"
     ],
     "2-2": [
-      "AI shopping",
-      "conversational commerce",
-      "AI stylist",
-      "AI sales assistant",
-      "guided shopping",
-      "product recommendation",
-      "virtual try-on",
-      "AI 쇼핑"
-    ],
-    "2-3": [
       "subscription economy",
       "appliance subscription",
       "usage-based billing",
       "predictive maintenance",
       "consumable replenishment",
-      "subscription AI",
-      "구독"
+      "service as living",
+      "AI shopping",
+      "conversational commerce",
+      "AI stylist",
+      "guided shopping",
+      "구독",
+      "렌탈"
     ],
     "3-1": [
-      "AI assistant",
+      "personal AI agent",
       "personal AI",
       "family AI",
       "home assistant",
       "AI agent",
       "task delegation",
+      "life management",
       "AI 비서"
     ],
     "3-2": [
       "AI productivity",
       "AI at work",
-      "home office",
-      "hybrid work",
-      "Work Trend Index",
-      "AI collaboration",
-      "productivity life",
-      "생산성"
-    ],
-    "3-3": [
       "AI literacy",
       "digital divide",
       "capability divide",
-      "older adults",
-      "senior AI onboarding",
+      "hybrid work",
       "AI skills",
-      "디지털 격차",
+      "home office",
+      "생산성",
       "AI 활용역량"
     ],
     "4-1": [
+      "AI companion",
       "emotional AI",
       "AI chatbot emotional support",
       "loneliness",
       "mental health chatbot",
-      "AI companion",
+      "companion robot",
+      "social robot",
+      "embodied AI",
       "정서 AI",
       "외로움"
     ],
     "4-2": [
-      "AI companion",
-      "companion robot",
-      "social robot",
-      "embodied AI",
-      "voice companion",
-      "senior companion",
-      "AI 동반자"
-    ],
-    "4-3": [
       "aging society",
       "home-based elder care",
       "AI care",
@@ -843,6 +814,7 @@
       "fall detection",
       "medication reminder",
       "senior home care",
+      "pet care",
       "고령화",
       "재택 돌봄"
     ]

@@ -345,6 +345,12 @@
   margin-bottom: 6px;
 }
 
+/* ── Category badge colors (g1–g4) ────────────────────────── */
+.cat-badge.g1 { background: var(--g1-bg); color: var(--g1); }
+.cat-badge.g2 { background: var(--g2-bg); color: var(--g2); }
+.cat-badge.g3 { background: var(--g3-bg); color: var(--g3); }
+.cat-badge.g4 { background: var(--g4-bg); color: var(--g4); }
+
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 700px) {
   .message-grid { grid-template-columns: 1fr; }
@@ -429,7 +435,7 @@
       <h2 class="section__title scroll-anim">AI는 기능이 아니라<br>생활 운영 방식의 변화다</h2>
       <p class="section__sub scroll-anim" style="margin-top:14px">
         AI가 고객의 생활에서 무엇을 대신 판단하고, 무엇을 자동화하며, 무엇을 위임받게 되는가.
-        생활 공간, 소비 행동, 개인 행동, 인간 관계 — 4개 영역에서 변화를 추적합니다.
+        생활 공간, 소비 행동, 개인 생활 운영, 관계·돌봄 — 4개 영역에서 변화를 추적합니다.
       </p>
     </div>
 
@@ -445,7 +451,7 @@
         <div class="message-card__items">
           <div class="message-card__item">
             <span class="message-card__item-num">1-1</span>
-            <span class="message-card__item-name">AI Home</span>
+            <span class="message-card__item-name">Autonomous Home</span>
           </div>
           <div class="message-card__item">
             <span class="message-card__item-num">1-2</span>
@@ -453,7 +459,7 @@
           </div>
           <div class="message-card__item">
             <span class="message-card__item-num">1-3</span>
-            <span class="message-card__item-name">Energy Optimization</span>
+            <span class="message-card__item-name">Energy Optimized Home</span>
           </div>
         </div>
       </div>
@@ -462,8 +468,8 @@
       <div class="message-card scroll-anim">
         <div class="message-card__label">Area 2</div>
         <div class="message-card__title">소비 행동 변화</div>
-        <div class="message-card__question">소비자는 AI에게 구매를 얼마나 위임하는가</div>
-        <p class="message-card__desc">검색과 비교를 넘어 AI가 구매까지 실행하게 될 때, 소비 행동과 브랜드 접점이 어떻게 바뀌는지 추적합니다.</p>
+        <div class="message-card__question">소비자는 AI에게 구매와 생활 기능을 얼마나 위임하는가</div>
+        <p class="message-card__desc">AI가 구매를 대행하고, 제품 소유보다 생활 기능 서비스를 이용하는 소비 방식으로 이동하는 변화를 추적합니다.</p>
         <div class="message-card__divider"></div>
         <div class="message-card__items">
           <div class="message-card__item">
@@ -472,57 +478,45 @@
           </div>
           <div class="message-card__item">
             <span class="message-card__item-num">2-2</span>
-            <span class="message-card__item-name">AI Shopping</span>
-          </div>
-          <div class="message-card__item">
-            <span class="message-card__item-num">2-3</span>
-            <span class="message-card__item-name">Subscription AI</span>
+            <span class="message-card__item-name">Service-as-Living</span>
           </div>
         </div>
       </div>
 
-      <!-- 3. 개인 행동 변화 -->
+      <!-- 3. 개인 생활 운영 변화 -->
       <div class="message-card scroll-anim">
         <div class="message-card__label">Area 3</div>
-        <div class="message-card__title">개인 행동 변화</div>
-        <div class="message-card__question">AI는 개인의 일상 운영 방식을 얼마나 바꾸는가</div>
-        <p class="message-card__desc">AI가 일정·업무·학습을 보조하면서, 사람의 역할이 실행자에서 판단자로 이동하는 방식을 분석합니다.</p>
+        <div class="message-card__title">개인 생활 운영 변화</div>
+        <div class="message-card__question">AI는 개인의 일상 운영 방식과 역량을 어떻게 바꾸는가</div>
+        <p class="message-card__desc">AI 에이전트가 일정·정보·루틴을 조율하고, 개인의 업무·학습·창작 역량을 증폭시키는 방식을 분석합니다.</p>
         <div class="message-card__divider"></div>
         <div class="message-card__items">
           <div class="message-card__item">
             <span class="message-card__item-num">3-1</span>
-            <span class="message-card__item-name">AI Assistant</span>
+            <span class="message-card__item-name">Personal AI Agent</span>
           </div>
           <div class="message-card__item">
             <span class="message-card__item-num">3-2</span>
-            <span class="message-card__item-name">Productivity Life</span>
-          </div>
-          <div class="message-card__item">
-            <span class="message-card__item-num">3-3</span>
-            <span class="message-card__item-name">Capability Divide</span>
+            <span class="message-card__item-name">Hyper-Capability</span>
           </div>
         </div>
       </div>
 
-      <!-- 4. 인간 관계 변화 -->
+      <!-- 4. 관계·돌봄 변화 -->
       <div class="message-card scroll-anim">
         <div class="message-card__label">Area 4</div>
-        <div class="message-card__title">인간 관계 변화</div>
-        <div class="message-card__question">AI는 사람과 사람 사이의 관계를 어떻게 바꾸는가</div>
-        <p class="message-card__desc">AI가 돌봄·정서·동반자 역할로 확장될 때, 고령화와 1인 가구 사회에서 어떤 새로운 생활 시장이 열리는지 살펴봅니다.</p>
+        <div class="message-card__title">관계·돌봄 변화</div>
+        <div class="message-card__question">AI는 가족, 돌봄, 정서적 관계의 빈틈을 어떻게 메우는가</div>
+        <p class="message-card__desc">AI가 정서적 동반자와 원격 돌봄 역할로 확장될 때, 고령화와 1인 가구 사회에서 열리는 새로운 생활 시장을 살펴봅니다.</p>
         <div class="message-card__divider"></div>
         <div class="message-card__items">
           <div class="message-card__item">
             <span class="message-card__item-num">4-1</span>
-            <span class="message-card__item-name">Emotional AI</span>
+            <span class="message-card__item-name">AI Companion</span>
           </div>
           <div class="message-card__item">
             <span class="message-card__item-num">4-2</span>
-            <span class="message-card__item-name">Companion</span>
-          </div>
-          <div class="message-card__item">
-            <span class="message-card__item-num">4-3</span>
-            <span class="message-card__item-name">Aging Society</span>
+            <span class="message-card__item-name">Remote Senior &amp; Pet Care</span>
           </div>
         </div>
       </div>
@@ -708,7 +702,7 @@ function buildThumb(c) {
 /* ── Card builder ───────────────────────────────────────── */
 function buildCard(c, categories) {
   const cat   = categories?.[c.category] || {};
-  const isTop = cat.type === 'top';
+  const g     = 'g' + (c.category.split('-')[0] || '1');
   const date  = (c.published_date || c.added_date)
     ? new Date(c.published_date || c.added_date).toLocaleDateString('ko-KR', { month:'short', day:'numeric' })
     : '';
@@ -744,7 +738,7 @@ function buildCard(c, categories) {
   foot.className = 'post-card__foot';
   foot.innerHTML = `
     <div class="post-card__foot-left">
-      <span class="cat-badge ${isTop ? 'top' : 'bot'}">${c.category}</span>
+      <span class="cat-badge ${g}">${c.category}</span>
       ${tags}
     </div>
     <div style="display:flex;align-items:center;gap:8px">

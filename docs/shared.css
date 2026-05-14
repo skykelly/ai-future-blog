@@ -57,8 +57,8 @@
   /* ── Category colors (4-group system: g1–g4) ── */
   --g1:    #3a8f7d;  --g1-bg:  #eaf5f3;  --g1-b:  #5db8a6;  /* teal  — 생활 공간 */
   --g2:    #b5711b;  --g2-bg:  #fdf3e7;  --g2-b:  #e8a55a;  /* amber — 소비 행동 */
-  --g3:    #2e7d4f;  --g3-bg:  #eaf7ec;  --g3-b:  #5db872;  /* green — 개인 행동 */
-  --g4:    #a9583e;  --g4-bg:  #fdf0eb;  --g4-b:  #cc785c;  /* coral — 인간 관계 */
+  --g3:    #2e7d4f;  --g3-bg:  #eaf7ec;  --g3-b:  #5db872;  /* green — 개인 생활 운영 */
+  --g4:    #a9583e;  --g4-bg:  #fdf0eb;  --g4-b:  #cc785c;  /* coral — 관계·돌봄 */
 
   /* ── Legacy category aliases (dashboard/archive inline CSS) ── */
   --green:    var(--g3);   --green-bg:  var(--g3-bg);  --green-b: var(--g3-b);

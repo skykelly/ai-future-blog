@@ -91,14 +91,18 @@ client = OpenAI(
 }
 ```
 
-## 카테고리 구조
-### Top-line 향상
-- 1-1: 신규 고객 획득 | 1-2: 전환율 상승 | 1-3: 객단가·Mix 개선
-- 1-4: 재구매·LTV 확대 | 1-5: 신규 수익모델
+## 카테고리 구조 (4개 영역 · 9개 카테고리)
+### Living Space Transformation — 생활 공간 변화
+- 1-1: Autonomous Home (자율 운영 홈) | 1-2: Wellness Home (웰니스 홈) | 1-3: Energy Optimized Home (에너지 최적화 홈)
 
-### Bottom-line 개선
-- 2-1: 마케팅 운영비 절감 | 2-2: 영업 운영비 절감 | 2-3: CS·케어 비용 절감
-- 2-4: 운영 판단력·실행력 | 2-5: 리스크·품질 비용 절감
+### Consumption Transformation — 소비 행동 변화
+- 2-1: Agentic Commerce (에이전틱 커머스) | 2-2: Service-as-Living (생활의 서비스화)
+
+### Personal Operating Transformation — 개인 생활 운영 변화
+- 3-1: Personal AI Agent (개인 AI 에이전트) | 3-2: Hyper-Capability (초확장 역량)
+
+### Relationship & Care Transformation — 관계·돌봄 변화
+- 4-1: AI Companion (AI 동반자) | 4-2: Remote Senior & Pet Care (원격 시니어·펫 케어)
 
 ## 파이프라인 흐름
 

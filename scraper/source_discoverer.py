@@ -92,11 +92,11 @@ def _get_client() -> OpenAI:
 def discover_sources_for_gap(gap: dict, existing_domains: set[str]) -> list[dict]:
     """Call GitHub Models to suggest candidate sources for one gap topic."""
     cat_names = {
-        "1-1": "customer acquisition", "1-2": "sales conversion",
-        "1-3": "upsell / average order value", "1-4": "retention / churn / LTV",
-        "1-5": "new revenue model", "2-1": "marketing cost reduction",
-        "2-2": "sales productivity", "2-3": "customer service automation",
-        "2-4": "demand forecasting / operations", "2-5": "brand risk / VOC",
+        "1-1": "autonomous home / smart home AI", "1-2": "wellness home / health monitoring",
+        "1-3": "home energy optimization / HEMS", "2-1": "agentic commerce / AI purchase agent",
+        "2-2": "service-as-living / subscription / predictive maintenance",
+        "3-1": "personal AI agent / life management", "3-2": "hyper-capability / AI productivity / literacy",
+        "4-1": "AI companion / emotional support", "4-2": "remote senior & pet care / elder care",
     }
     cats = ", ".join(
         cat_names.get(c, c)

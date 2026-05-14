@@ -25,27 +25,24 @@ MODEL = "gpt-4o-mini"
 
 # ── Category taxonomy ──────────────────────────────────────────────────────────
 CATEGORIES = {
-    "1-1": "AI Home — 집이 스스로 운영되는 공간 (스마트홈 AI, 홈 자동화, Gemini for Home, Alexa+, Matter)",
-    "1-2": "Wellness Home — 집이 건강·회복·예방 공간 (수면, 공기질, 시니어 모니터링, ambient assisted living)",
-    "1-3": "Energy Optimization — 에너지 자동 최적화 (HEMS, 전기요금, 태양광, EV충전, home battery)",
+    "1-1": "Autonomous Home — 집이 스스로 환경과 기기를 운영하는 공간 (AI Home OS, 홈 자동화, Gemini for Home, Alexa+, Matter)",
+    "1-2": "Wellness Home — 집이 건강·회복·예방을 관리하는 공간 (수면, 공기질, 시니어 모니터링, ambient assisted living)",
+    "1-3": "Energy Optimized Home — AI 에너지 최적화로 생활비를 줄이는 집 (HEMS, 전기요금, 태양광, EV충전, home battery)",
     "2-1": "Agentic Commerce — AI가 탐색·비교·구매를 대행 (agentic AI, zero-click, autonomous purchase, GEO)",
-    "2-2": "AI Shopping — 대화형·개인화 쇼핑 (AI stylist, conversational commerce, guided shopping, AI sales assistant)",
-    "2-3": "Subscription AI — AI 기반 구독·사용 관리 (subscription economy, usage-based, predictive maintenance, consumable)",
-    "3-1": "AI Assistant — 개인·가족 생활 AI 비서 (personal AI agent, Gemini, ChatGPT for daily life, family AI)",
-    "3-2": "Productivity Life — AI와 업무·생산성 변화 (AI at work, Work Trend Index, hybrid work, frontier firms)",
-    "3-3": "Capability Divide — AI 활용 역량 격차 (digital divide, AI literacy, senior onboarding, grey digital divide)",
-    "4-1": "Emotional AI — AI와 정서 대화·외로움 (loneliness, mental health chatbot, emotional support AI)",
-    "4-2": "Companion — AI 동반자 디바이스·서비스 (companion robot, social robot, AI pet, senior companion)",
-    "4-3": "Aging Society — 시니어·고령화 AI 돌봄 (elder care, home-based care, fall detection, medication reminder)",
+    "2-2": "Service-as-Living — 제품 소유에서 생활 기능 서비스 이용으로 (구독·렌탈·케어·소모품 자동 보충, predictive maintenance)",
+    "3-1": "Personal AI Agent — 개인의 일정·정보·루틴을 조율하는 AI 에이전트 (personal AI, family AI, task delegation, life management)",
+    "3-2": "Hyper-Capability — AI로 개인의 업무·학습·창작 역량이 증폭 (AI at work, AI literacy, productivity, capability divide)",
+    "4-1": "AI Companion — AI가 정서적 대화와 생활 동반자 역할 (loneliness, emotional AI, companion robot, social robot)",
+    "4-2": "Remote Senior & Pet Care — AI가 시니어·펫 돌봄을 원격·예측형으로 (elder care, fall detection, remote monitoring, pet care)",
 }
 
 VALID_CATEGORIES = set(CATEGORIES.keys())
 
 # ── Extraction prompt ──────────────────────────────────────────────────────────
 EXTRACTION_PROMPT = """당신은 'Life After AI' 리서치 블로그의 아티클 분석가입니다.
-이 블로그는 AI가 고객의 집·소비·개인 생활·인간 관계를 어떻게 바꾸는지 추적합니다.
+이 블로그는 AI가 고객의 집·소비·개인 생활·관계와 돌봄을 어떻게 바꾸는지 추적합니다.
 
-## 12개 분석 카테고리:
+## 9개 분석 카테고리:
 {categories}
 
 ## 분석할 아티클:
@@ -57,7 +54,7 @@ URL: {url}
 {body}
 
 ## 지시사항:
-1. 위 12개 카테고리 중 가장 적합한 하나에 해당하면 JSON으로 추출하세요.
+1. 위 9개 카테고리 중 가장 적합한 하나에 해당하면 JSON으로 추출하세요.
 2. company = 아티클의 핵심 기업·기관명 (연구기관·미디어·스타트업·대기업 모두 가능)
 3. short = 2~4자 영문 약어 (예: GOO, AMA, MCK, DEL)
 4. kpi_value = 가장 핵심적인 수치 또는 키워드 (수치 없으면 "N/A")
@@ -65,14 +62,14 @@ URL: {url}
 6. trend: "pos"(긍정·성장), "neg"(부정·감소·위험), "neu"(중립·정보)
 7. published_date = 아티클 최초 발행일 (YYYY-MM-DD). 날짜 불명 시 연도만 알면 YYYY-01-01. 완전 불명 시 null
 8. 모든 텍스트 필드(title, description, body)는 반드시 한국어로 작성
-9. 위 12개 카테고리와 무관한 아티클은 has_case: false 반환
+9. 위 9개 카테고리와 무관한 아티클은 has_case: false 반환
 
 JSON 형식 (마크다운 코드블록 없이 순수 JSON만):
 {{
   "has_case": true,
   "company": "기업/기관명 (영문 또는 한글)",
   "short": "약어",
-  "category": "1-1 ~ 4-3 중 하나",
+  "category": "1-1 ~ 4-2 중 하나",
   "kpi_value": "핵심 수치 또는 키워드",
   "kpi_label": "수치 설명 (10자 이내)",
   "title": "아티클 제목 (한국어, 30자 이내)",
