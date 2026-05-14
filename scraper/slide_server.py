@@ -121,12 +121,20 @@ def build_research_text(category: str = "") -> str:
 
 # ── Slide generation job ───────────────────────────────────────────────────────
 
+DEFAULT_PROMPT = (
+    "업로드된 소스 내용을 바탕으로, 슬라이드 전체를 흥미진진한 만화 형식으로 만들어줘. "
+    "각 슬라이드는 개별 만화 컷처럼 레이아웃을 구성하고, 캐릭터들이 대화하는 듯한 형식과 "
+    "시각적 효과를 포함해줘. 청중이 영화를 보는 것처럼 느낄 수 있게 해줘."
+)
+
+
 def run_generation(job_id: str, params: dict):
-    scenario    = params.get("scenario", "")
-    category    = params.get("category", "")
-    slide_count = params.get("slideCount", 12)
-    lang        = params.get("lang", "ko")
-    fmt         = params.get("format", "detailed_deck")
+    scenario      = params.get("scenario", "")
+    category      = params.get("category", "")
+    lang          = params.get("lang", "ko")
+    fmt           = params.get("format", "presenter_slides")
+    length        = params.get("length", "short")
+    custom_prompt = params.get("customPrompt", DEFAULT_PROMPT) or DEFAULT_PROMPT
 
     def step(n: int, msg: str):
         jobs[job_id].update(step=n, msg=msg, status="running")
@@ -155,26 +163,29 @@ def run_generation(job_id: str, params: dict):
             "--title", "Life After AI Research DB",
             "--wait")
 
-        # 시나리오를 별도 소스로 추가
+        # 시나리오 + 맞춤 프롬프트를 별도 소스로 추가
         cat_label = CATEGORY_NAMES.get(category, "전체")
         scenario_src = (
             f"# 슬라이드 생성 시나리오\n\n{scenario}\n\n"
             f"카테고리 포커스: {category or '전체'} {cat_label}\n"
-            f"슬라이드 수: {slide_count}장\n"
-            f"언어: {'한국어' if lang == 'ko' else 'English'}"
+            f"언어: {'한국어' if lang == 'ko' else 'English'}\n\n"
+            f"# 슬라이드 스타일 지침\n\n{custom_prompt}"
         )
         nlm("source", "add", nb_id,
             "--text", scenario_src,
-            "--title", "슬라이드 시나리오",
+            "--title", "슬라이드 시나리오 및 스타일",
             "--wait")
 
         # ── Step 3: 슬라이드 생성 요청 ─────────────────────────────────────────
         step(3, "NotebookLM 슬라이드 생성 중... (1~2분 소요)")
         lang_code = "ko" if lang == "ko" else "en"
+        # focus = 시나리오 요약 + 맞춤 프롬프트 (nlm --focus 최대 ~500자)
+        focus_text = (scenario[:200] + " / " + custom_prompt[:280]).strip()
         nlm("slides", "create", nb_id,
-            "--focus", scenario[:500],
+            "--focus",    focus_text,
             "--language", lang_code,
             "--format",   fmt,
+            "--length",   length,
             "--confirm",
             timeout=30)
 

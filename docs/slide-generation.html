@@ -281,6 +281,30 @@ body { padding-bottom: 80px; font-size: 14px; }
 .empty-title { font-size: 16px; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
 .empty-sub { font-size: 13px; line-height: 1.65; }
 
+/* ── Style chips ──────────────────────────────────────────── */
+.style-chips {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;
+}
+.style-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 16px; border-radius: 10px;
+  border: 1.5px solid var(--hairline);
+  background: var(--canvas); cursor: pointer;
+  transition: all .14s; user-select: none; min-width: 72px;
+}
+.style-chip:hover {
+  border-color: var(--primary);
+  background: rgba(204,120,92,.06);
+}
+.style-chip.on {
+  border-color: var(--primary);
+  background: rgba(204,120,92,.10);
+  box-shadow: 0 0 0 3px rgba(204,120,92,.14);
+}
+.style-chip-emoji { font-size: 20px; line-height: 1; }
+.style-chip-label { font-size: 11px; font-weight: 600; color: var(--body); white-space: nowrap; }
+.style-chip.on .style-chip-label { color: var(--primary); }
+
 /* ── Server badge ─────────────────────────────────────────── */
 .server-badge {
   display: inline-block;
@@ -342,7 +366,7 @@ body { padding-bottom: 80px; font-size: 14px; }
       <span class="scenario-char" id="char-count">0 / 2000</span>
     </div>
 
-    <!-- 옵션 -->
+    <!-- 옵션 행 -->
     <div class="gen-opts">
       <div class="gen-opt-group">
         <label class="gen-label" style="margin-bottom:0">카테고리 포커스</label>
@@ -368,12 +392,17 @@ body { padding-bottom: 80px; font-size: 14px; }
         </select>
       </div>
       <div class="gen-opt-group">
-        <label class="gen-label" style="margin-bottom:0">슬라이드 수</label>
-        <select class="gen-opt-select" id="opt-slides">
-          <option value="8">8 슬라이드</option>
-          <option value="12" selected>12 슬라이드</option>
-          <option value="16">16 슬라이드</option>
-          <option value="20">20 슬라이드</option>
+        <label class="gen-label" style="margin-bottom:0">형식</label>
+        <select class="gen-opt-select" id="opt-format">
+          <option value="presenter_slides" selected>발표자 슬라이드</option>
+          <option value="detailed_deck">자세한 덱</option>
+        </select>
+      </div>
+      <div class="gen-opt-group">
+        <label class="gen-label" style="margin-bottom:0">길이</label>
+        <select class="gen-opt-select" id="opt-length">
+          <option value="short" selected>짧게</option>
+          <option value="default">기본</option>
         </select>
       </div>
       <div class="gen-opt-group">
@@ -382,6 +411,38 @@ body { padding-bottom: 80px; font-size: 14px; }
           <option value="ko" selected>한국어</option>
           <option value="en">English</option>
         </select>
+      </div>
+    </div>
+
+    <!-- 맞춤 프롬프트 -->
+    <div style="margin-top:18px">
+      <label class="gen-label">맞춤 프롬프트 <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted-soft)">(슬라이드 스타일 설명)</span></label>
+      <textarea class="batch-ta" id="custom-prompt" style="height:96px;margin-bottom:10px"
+        >업로드된 소스 내용을 바탕으로, 슬라이드 전체를 흥미진진한 만화 형식으로 만들어줘. 각 슬라이드는 개별 만화 컷처럼 레이아웃을 구성하고, 캐릭터들이 대화하는 듯한 형식과 시각적 효과를 포함해줘. 청중이 영화를 보는 것처럼 느낄 수 있게 해줘.</textarea>
+
+      <!-- 스타일 선택 버튼 -->
+      <label class="gen-label" style="margin-bottom:8px">비주얼 스타일 <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted-soft)">(선택 시 프롬프트에 추가)</span></label>
+      <div class="style-chips" id="style-chips">
+        <div class="style-chip" data-style="animation" onclick="selStyle(this)">
+          <span class="style-chip-emoji">🌸</span>
+          <span class="style-chip-label">애니메이션</span>
+        </div>
+        <div class="style-chip" data-style="pixar" onclick="selStyle(this)">
+          <span class="style-chip-emoji">🎬</span>
+          <span class="style-chip-label">픽사</span>
+        </div>
+        <div class="style-chip" data-style="ghibli" onclick="selStyle(this)">
+          <span class="style-chip-emoji">🌿</span>
+          <span class="style-chip-label">지브리</span>
+        </div>
+        <div class="style-chip" data-style="webtoon" onclick="selStyle(this)">
+          <span class="style-chip-emoji">⚡</span>
+          <span class="style-chip-label">웹툰</span>
+        </div>
+        <div class="style-chip" data-style="3d" onclick="selStyle(this)">
+          <span class="style-chip-emoji">🎭</span>
+          <span class="style-chip-label">3D 캐릭터</span>
+        </div>
       </div>
     </div>
 
@@ -554,13 +615,44 @@ function setStatusMsg(msg, sub) {
   document.getElementById('gen-status-sub').textContent = sub || '';
 }
 
+/* ── Style selection ──────────────────────────────────────── */
+const STYLE_PROMPTS = {
+  animation: 'Makoto Shinkai style, cinematic lighting, dramatic clouds, hyper-detailed, vibrant colors, lens flare, emotional',
+  pixar:     'Create a 3D animated, Pixar-style presentation slide. Use high-quality 3D rendered, cute characters with expressive faces and bright, cinematic, vibrant colors. Include a cozy and detailed background, focused on emotional storytelling.',
+  ghibli:    'Generate a Studio Ghibli inspired, hand-drawn anime illustration style slide. Soft pastel colors, warm lighting, detailed nature background with a nostalgic and artistic feel. Focus on emotional, serene scenes.',
+  webtoon:   'Create a modern 2D anime illustration, vibrant, cell-shaded style. Dynamic composition, dramatic, high-contrast lighting, bold lines, and expressive anime characters. Cyberpunk or modern urban background.',
+  '3d':      'Generate a humorous, 3D animated, caricatured style slide. Focus on exaggerated facial expressions, funny poses, bright colors, and low-poly, fun, minimalist, high-quality rendered backgrounds.',
+};
+
+const BASE_PROMPT = '업로드된 소스 내용을 바탕으로, 슬라이드 전체를 흥미진진한 만화 형식으로 만들어줘. 각 슬라이드는 개별 만화 컷처럼 레이아웃을 구성하고, 캐릭터들이 대화하는 듯한 형식과 시각적 효과를 포함해줘. 청중이 영화를 보는 것처럼 느낄 수 있게 해줘.';
+
+let activeStyle = null;
+
+function selStyle(el) {
+  const style = el.dataset.style;
+  // 같은 스타일 재클릭 → 해제
+  if (activeStyle === style) {
+    activeStyle = null;
+    el.classList.remove('on');
+    document.getElementById('custom-prompt').value = BASE_PROMPT;
+    return;
+  }
+  // 새 스타일 선택
+  document.querySelectorAll('.style-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  activeStyle = style;
+  document.getElementById('custom-prompt').value =
+    BASE_PROMPT + '\n\n' + STYLE_PROMPTS[style];
+}
+
 /* ── Generate ─────────────────────────────────────────────── */
 async function startGenerate() {
-  const scenario   = document.getElementById('scenario-input').value.trim();
-  const category   = document.getElementById('opt-category').value;
-  const slideCount = parseInt(document.getElementById('opt-slides').value);
-  const lang       = document.getElementById('opt-lang').value;
-  const fmt        = document.getElementById('opt-format')?.value || 'detailed_deck';
+  const scenario     = document.getElementById('scenario-input').value.trim();
+  const category     = document.getElementById('opt-category').value;
+  const lang         = document.getElementById('opt-lang').value;
+  const fmt          = document.getElementById('opt-format').value;
+  const length       = document.getElementById('opt-length').value;
+  const customPrompt = document.getElementById('custom-prompt').value.trim();
 
   if (scenario.length < 10 || !serverOnline) return;
 
@@ -574,7 +666,7 @@ async function startGenerate() {
     const res = await fetch(`${API}/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scenario, category, slideCount, lang, format: fmt }),
+      body: JSON.stringify({ scenario, category, lang, format: fmt, length, customPrompt }),
     });
     if (!res.ok) throw new Error(`서버 오류 ${res.status}`);
     const { job_id } = await res.json();
