@@ -328,8 +328,131 @@ input.err { border-color: var(--error) !important; }
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--surface-dark); color: var(--on-dark); font-size: 12px; padding: 10px 18px; border-radius: 9999px; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; z-index: 200; box-shadow: 0 8px 24px rgba(20,20,19,.25); border: 0.5px solid rgba(255,255,255,.08); }
 .toast.show { opacity: 1; }
 
+/* ── Add sub-tabs ─────────────────────────────────────── */
+.add-tabs {
+  display: flex; gap: 0;
+  border-bottom: 0.5px solid var(--hairline);
+  padding: 0 24px;
+  background: var(--canvas);
+}
+.add-tab {
+  font-size: 13px; font-weight: 500; padding: 10px 16px; cursor: pointer;
+  border-bottom: 2px solid transparent; color: var(--muted);
+  transition: all .12s; user-select: none;
+}
+.add-tab:hover { color: var(--ink); }
+.add-tab.on    { color: var(--ink); border-bottom-color: var(--primary); }
+
+.add-panel { display: none; padding: 20px 24px; max-width: 760px; }
+.add-panel.on { display: block; }
+
+/* ── Drop zone ────────────────────────────────────────── */
+.drop-zone {
+  border: 1.5px dashed var(--hairline-soft);
+  border-radius: 10px;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  background: var(--surface-soft);
+  margin-bottom: 4px;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--primary);
+  background: rgba(204,120,92,.05);
+}
+.drop-zone.has-file {
+  border-color: var(--g3-b);
+  background: var(--g3-bg);
+}
+.drop-icon { font-size: 28px; margin-bottom: 8px; }
+.drop-text { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+.drop-sub  { font-size: 12px; color: var(--muted-soft); }
+
+/* ── Batch textarea ───────────────────────────────────── */
+.batch-ta {
+  width: 100%; height: 130px; resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid var(--hairline); border-radius: 8px;
+  background: var(--canvas); color: var(--ink);
+  font-family: "JetBrains Mono","SFMono-Regular",monospace;
+  font-size: 12px; line-height: 1.7;
+  outline: none; transition: border-color .12s;
+  margin-bottom: 14px;
+}
+.batch-ta:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(204,120,92,.12); }
+
+/* ── Batch preview ────────────────────────────────────── */
+.batch-preview {
+  background: var(--surface-soft);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border: 0.5px solid var(--hairline);
+}
+.batch-summary {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  font-size: 12px; margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid var(--hairline);
+}
+.batch-stat { display: flex; align-items: center; gap: 5px; }
+.batch-stat-n { font-size: 16px; font-weight: 700; color: var(--ink); }
+.batch-stat-l { color: var(--muted-soft); }
+.batch-stat.ok  .batch-stat-n { color: var(--g3); }
+.batch-stat.err .batch-stat-n { color: var(--error); }
+.batch-stat.skip .batch-stat-n { color: var(--muted); }
+
+.batch-list {
+  max-height: 180px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.batch-item {
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 12px; line-height: 1.4; padding: 3px 0;
+}
+.batch-item-cat {
+  font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px;
+  flex-shrink: 0; font-family: monospace;
+}
+.batch-item-cat.auto { background: var(--surface-cream-strong); color: var(--muted); }
+.batch-item-cat.g1   { background: var(--g1-bg); color: var(--g1); }
+.batch-item-cat.g2   { background: var(--g2-bg); color: var(--g2); }
+.batch-item-cat.g3   { background: var(--g3-bg); color: var(--g3); }
+.batch-item-cat.g4   { background: var(--g4-bg); color: var(--g4); }
+.batch-item-url { color: var(--body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.batch-item.skip .batch-item-url { color: var(--muted-soft); text-decoration: line-through; }
+.batch-item.error .batch-item-url { color: var(--error); }
+
+/* ── Batch options ────────────────────────────────────── */
+.batch-opts { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 4px; }
+.batch-opt-row { display: flex; align-items: center; gap: 8px; }
+.batch-opt-label { font-size: 13px; color: var(--body); }
+
+/* ── Format hint ──────────────────────────────────────── */
+.batch-format-hint {
+  margin-top: 16px;
+  border: 0.5px solid var(--hairline);
+  border-radius: 8px; overflow: hidden;
+}
+.batch-format-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted);
+  padding: 7px 14px; background: var(--surface-soft);
+  border-bottom: 0.5px solid var(--hairline);
+}
+.batch-format-code {
+  margin: 0; padding: 12px 14px;
+  font-family: "JetBrains Mono","SFMono-Regular",monospace;
+  font-size: 12px; line-height: 1.75; color: var(--body);
+  background: var(--canvas);
+  white-space: pre;
+}
+
 @media(max-width:640px) {
   #panel-add, #panel-manage { padding: 16px; }
+  .add-panel { padding: 16px; }
+  .add-tabs  { padding: 0 16px; }
   .art-filter  { padding: 8px 16px; top: 148px; }
   .art-meta    { padding: 7px 16px; }
   .art-tbl-wrap{ padding: 0 16px; }
@@ -359,47 +482,127 @@ input.err { border-color: var(--error) !important; }
      Panel: URL로 추가
 ════════════════════════════════════════════════════════ -->
 <div class="panel on" id="panel-add">
-  <div class="form-card">
-    <label>아티클 URL</label>
-    <div class="url-row">
-      <input type="url" id="url-input" placeholder="https://example.com/article"
-             oninput="clearAddCmd()" onkeydown="if(event.key==='Enter') genAddCmd()">
-      <button class="btn btn-primary" onclick="genAddCmd()">명령어 생성</button>
-    </div>
-    <label>카테고리 힌트 <span style="font-weight:400;color:var(--muted-soft)">(선택 — 없으면 AI 자동 분류)</span></label>
-    <select class="cat-select" id="cat-hint" oninput="clearAddCmd()">
-      <option value="">-- 자동 감지 --</option>
-      <optgroup label="생활 공간 변화">
-        <option value="1-1">1-1 Autonomous Home</option>
-        <option value="1-2">1-2 Wellness Home</option>
-        <option value="1-3">1-3 Energy Optimized Home</option>
-      </optgroup>
-      <optgroup label="소비 행동 변화">
-        <option value="2-1">2-1 Agentic Commerce</option>
-        <option value="2-2">2-2 Service-as-Living</option>
-      </optgroup>
-      <optgroup label="개인 생활 운영 변화">
-        <option value="3-1">3-1 Personal AI Agent</option>
-        <option value="3-2">3-2 Hyper-Capability</option>
-      </optgroup>
-      <optgroup label="관계·돌봄 변화">
-        <option value="4-1">4-1 AI Companion</option>
-        <option value="4-2">4-2 Remote Senior &amp; Pet Care</option>
-      </optgroup>
-    </select>
-    <div class="cmd-wrap" id="add-cmd-wrap">
-      <div class="cmd-label">터미널 명령어</div>
-      <div class="cmd-text" id="add-cmd-text"></div>
-      <div class="cmd-actions">
-        <button class="btn-copy" id="add-copy-btn" onclick="copyCmd('add-cmd-text','add-copy-btn')">복사</button>
-        <span class="cmd-hint">Claude Code 터미널에서 <code style="color:var(--accent-teal)">!</code> 를 붙여 실행</span>
+
+  <!-- 서브탭 -->
+  <div class="add-tabs">
+    <div class="add-tab on" id="atab-single" onclick="selAddTab('single')">단일 URL</div>
+    <div class="add-tab"    id="atab-batch"  onclick="selAddTab('batch')">배치 업로드</div>
+  </div>
+
+  <!-- ── 서브패널: 단일 URL ─────────────────────────── -->
+  <div class="add-panel on" id="apanel-single">
+    <div class="form-card">
+      <label>아티클 URL</label>
+      <div class="url-row">
+        <input type="url" id="url-input" placeholder="https://example.com/article"
+               oninput="clearAddCmd()" onkeydown="if(event.key==='Enter') genAddCmd()">
+        <button class="btn btn-primary" onclick="genAddCmd()">명령어 생성</button>
+      </div>
+      <label>카테고리 힌트 <span style="font-weight:400;color:var(--muted-soft)">(선택 — 없으면 AI 자동 분류)</span></label>
+      <select class="cat-select" id="cat-hint" oninput="clearAddCmd()">
+        <option value="">-- 자동 감지 --</option>
+        <optgroup label="생활 공간 변화">
+          <option value="1-1">1-1 Autonomous Home</option>
+          <option value="1-2">1-2 Wellness Home</option>
+          <option value="1-3">1-3 Energy Optimized Home</option>
+        </optgroup>
+        <optgroup label="소비 행동 변화">
+          <option value="2-1">2-1 Agentic Commerce</option>
+          <option value="2-2">2-2 Service-as-Living</option>
+        </optgroup>
+        <optgroup label="개인 생활 운영 변화">
+          <option value="3-1">3-1 Personal AI Agent</option>
+          <option value="3-2">3-2 Hyper-Capability</option>
+        </optgroup>
+        <optgroup label="관계·돌봄 변화">
+          <option value="4-1">4-1 AI Companion</option>
+          <option value="4-2">4-2 Remote Senior &amp; Pet Care</option>
+        </optgroup>
+      </select>
+      <div class="cmd-wrap" id="add-cmd-wrap">
+        <div class="cmd-label">터미널 명령어</div>
+        <div class="cmd-text" id="add-cmd-text"></div>
+        <div class="cmd-actions">
+          <button class="btn-copy" id="add-copy-btn" onclick="copyCmd('add-cmd-text','add-copy-btn')">복사</button>
+          <span class="cmd-hint">Claude Code 터미널에서 <code style="color:var(--accent-teal)">!</code> 를 붙여 실행</span>
+        </div>
       </div>
     </div>
+    <p style="font-size:12px;color:var(--muted-soft);line-height:1.8">
+      명령어 복사 후 Claude Code 채팅창에 <code>! 명령어</code> 형태로 붙여넣어 실행하거나,
+      터미널에서 직접 실행하세요.
+    </p>
   </div>
-  <p style="font-size:12px;color:var(--muted-soft);line-height:1.8">
-    명령어 복사 후 Claude Code 채팅창에 <code>! 명령어</code> 형태로 붙여넣어 실행하거나,
-    터미널에서 직접 실행하세요.
-  </p>
+
+  <!-- ── 서브패널: 배치 업로드 ──────────────────────── -->
+  <div class="add-panel" id="apanel-batch">
+    <div class="form-card">
+
+      <!-- 드롭존 -->
+      <label>URL 목록 파일 <span style="font-weight:400;color:var(--muted-soft)">(.txt)</span></label>
+      <div class="drop-zone" id="batch-drop"
+           ondragover="batchDragOver(event)" ondragleave="batchDragLeave(event)" ondrop="batchDrop(event)"
+           onclick="document.getElementById('batch-file-input').click()">
+        <div class="drop-icon">📄</div>
+        <div class="drop-text">파일을 드래그하거나 클릭해서 선택</div>
+        <div class="drop-sub">.txt — 줄당 URL 또는 <code>카테고리,URL</code></div>
+        <input type="file" id="batch-file-input" accept=".txt,text/plain" style="display:none"
+               onchange="batchFileSelect(this)">
+      </div>
+
+      <!-- 직접 입력 -->
+      <label style="margin-top:16px">또는 직접 붙여넣기</label>
+      <textarea id="batch-textarea" class="batch-ta"
+                placeholder="https://example.com/article1&#10;1-1,https://example.com/article2&#10;# 주석은 무시됩니다"
+                oninput="batchParse()"></textarea>
+
+      <!-- 프리뷰 -->
+      <div class="batch-preview" id="batch-preview" style="display:none">
+        <div class="batch-summary" id="batch-summary"></div>
+        <div class="batch-list" id="batch-list"></div>
+      </div>
+
+      <!-- 옵션 -->
+      <div class="batch-opts" id="batch-opts" style="display:none">
+        <div class="batch-opt-row">
+          <span class="batch-opt-label">요청 간격</span>
+          <input type="number" id="batch-delay" value="2" min="1" max="30" step="0.5"
+                 style="width:64px;padding:5px 8px;border:1px solid var(--hairline);border-radius:6px;background:var(--canvas);color:var(--ink);font-size:13px;text-align:center">
+          <span class="batch-opt-label">초</span>
+        </div>
+        <div class="batch-opt-row">
+          <label class="toggle" style="cursor:pointer">
+            <input type="checkbox" id="batch-dryrun">
+            <span class="slider"></span>
+          </label>
+          <span class="batch-opt-label">드라이런 <span style="color:var(--muted-soft)">(저장 안 함, 추출만)</span></span>
+        </div>
+      </div>
+
+      <!-- 명령어 생성 버튼 -->
+      <button class="btn btn-primary" id="batch-gen-btn" onclick="genBatchCmd()"
+              style="display:none;margin-top:16px">명령어 생성</button>
+
+      <!-- 명령어 블록 -->
+      <div class="cmd-wrap" id="batch-cmd-wrap">
+        <div class="cmd-label">터미널 명령어</div>
+        <div class="cmd-text" id="batch-cmd-text"></div>
+        <div class="cmd-actions">
+          <button class="btn-copy" id="batch-copy-btn" onclick="copyCmd('batch-cmd-text','batch-copy-btn')">복사</button>
+          <span class="cmd-hint">Claude Code 터미널에서 <code style="color:var(--accent-teal)">!</code> 를 붙여 실행</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="batch-format-hint">
+      <div class="batch-format-title">파일 형식</div>
+      <pre class="batch-format-code">https://example.com/article1
+1-1,https://example.com/article2
+2-1,https://example.com/article3
+# 이 줄은 주석으로 무시됩니다</pre>
+    </div>
+  </div>
+
 </div>
 
 <!-- ════════════════════════════════════════════════════════
@@ -870,7 +1073,17 @@ async function artDeleteViaAPI(ids, token) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   ADD COMMAND GENERATOR
+   ADD SUB-TAB SWITCHER
+══════════════════════════════════════════════════════════ */
+function selAddTab(name) {
+  ['single','batch'].forEach(t => {
+    document.getElementById('atab-'   + t).classList.toggle('on', t === name);
+    document.getElementById('apanel-' + t).classList.toggle('on', t === name);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   ADD COMMAND GENERATOR (단일 URL)
 ══════════════════════════════════════════════════════════ */
 function genAddCmd() {
   const url  = document.getElementById('url-input').value.trim();
@@ -884,6 +1097,153 @@ function genAddCmd() {
   document.getElementById('add-copy-btn').classList.remove('copied');
 }
 function clearAddCmd() { document.getElementById('add-cmd-wrap').classList.remove('show'); }
+
+/* ══════════════════════════════════════════════════════════
+   BATCH UPLOAD
+══════════════════════════════════════════════════════════ */
+let batchEntries = [];   // { url, hint, skip, error }
+
+function batchDragOver(e) {
+  e.preventDefault();
+  document.getElementById('batch-drop').classList.add('drag-over');
+}
+function batchDragLeave(e) {
+  document.getElementById('batch-drop').classList.remove('drag-over');
+}
+function batchDrop(e) {
+  e.preventDefault();
+  document.getElementById('batch-drop').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) loadBatchFile(file);
+}
+function batchFileSelect(input) {
+  const file = input.files[0];
+  if (file) loadBatchFile(file);
+  input.value = '';
+}
+function loadBatchFile(file) {
+  const drop = document.getElementById('batch-drop');
+  drop.classList.add('has-file');
+  drop.querySelector('.drop-text').textContent = file.name;
+  drop.querySelector('.drop-sub').textContent  = `${(file.size/1024).toFixed(1)} KB — 다른 파일로 변경하려면 클릭`;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('batch-textarea').value = e.target.result;
+    batchParse();
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function batchParse() {
+  const raw = document.getElementById('batch-textarea').value;
+  const lines = raw.split(/\r?\n/);
+  batchEntries = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    if (trimmed.startsWith('#')) {
+      batchEntries.push({ raw: trimmed, skip: true });
+      continue;
+    }
+    // 카테고리,URL 형식
+    const commaIdx = trimmed.indexOf(',');
+    if (commaIdx > 0 && !trimmed.startsWith('http')) {
+      const hint = trimmed.slice(0, commaIdx).trim();
+      const url  = trimmed.slice(commaIdx + 1).trim();
+      if (url.startsWith('http')) {
+        batchEntries.push({ url, hint, skip: false });
+      } else {
+        batchEntries.push({ raw: trimmed, error: true });
+      }
+    } else if (trimmed.startsWith('http')) {
+      batchEntries.push({ url: trimmed, hint: '', skip: false });
+    } else {
+      batchEntries.push({ raw: trimmed, error: true });
+    }
+  }
+
+  renderBatchPreview();
+}
+
+function renderBatchPreview() {
+  const valid = batchEntries.filter(e => !e.skip && !e.error);
+  const skipped = batchEntries.filter(e => e.skip);
+  const errors  = batchEntries.filter(e => e.error);
+
+  const preview = document.getElementById('batch-preview');
+  const opts    = document.getElementById('batch-opts');
+  const genBtn  = document.getElementById('batch-gen-btn');
+  const cmdWrap = document.getElementById('batch-cmd-wrap');
+
+  if (batchEntries.length === 0) {
+    preview.style.display = 'none';
+    opts.style.display    = 'none';
+    genBtn.style.display  = 'none';
+    return;
+  }
+
+  // Summary
+  document.getElementById('batch-summary').innerHTML = `
+    <div class="batch-stat ok">
+      <span class="batch-stat-n">${valid.length}</span>
+      <span class="batch-stat-l">처리 대상 URL</span>
+    </div>
+    ${skipped.length ? `<div class="batch-stat skip">
+      <span class="batch-stat-n">${skipped.length}</span>
+      <span class="batch-stat-l">주석 건너뜀</span>
+    </div>` : ''}
+    ${errors.length ? `<div class="batch-stat err">
+      <span class="batch-stat-n">${errors.length}</span>
+      <span class="batch-stat-l">형식 오류</span>
+    </div>` : ''}
+  `;
+
+  // List (최대 50개 표시)
+  const display = batchEntries.filter(e => !e.skip).slice(0, 50);
+  document.getElementById('batch-list').innerHTML = display.map(e => {
+    if (e.error) {
+      return `<div class="batch-item error">
+        <span class="batch-item-cat auto">ERR</span>
+        <span class="batch-item-url">${esc(e.raw)}</span>
+      </div>`;
+    }
+    const g    = e.hint ? 'g' + e.hint.split('-')[0] : 'auto';
+    const cat  = e.hint || 'AUTO';
+    const url  = e.url.replace(/^https?:\/\//, '');
+    return `<div class="batch-item">
+      <span class="batch-item-cat ${g}">${esc(cat)}</span>
+      <span class="batch-item-url" title="${esc(e.url)}">${esc(url)}</span>
+    </div>`;
+  }).join('');
+
+  preview.style.display = 'block';
+  opts.style.display    = valid.length ? 'flex' : 'none';
+  genBtn.style.display  = valid.length ? 'block' : 'none';
+  cmdWrap.classList.remove('show');
+}
+
+function genBatchCmd() {
+  const valid  = batchEntries.filter(e => !e.skip && !e.error);
+  if (!valid.length) return;
+
+  const delay  = parseFloat(document.getElementById('batch-delay').value) || 2;
+  const dryrun = document.getElementById('batch-dryrun').checked;
+  const stamp  = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const fname  = `/tmp/laf_batch_${stamp}.txt`;
+
+  // Heredoc 내용 (URL 목록)
+  const lines = valid.map(e => e.hint ? `${e.hint},${e.url}` : e.url).join('\n');
+
+  const dryPart = dryrun ? ' --dry-run' : '';
+  const cmd = `cat > ${fname} << 'URLEOF'\n${lines}\nURLEOF\npython scraper/batch_add.py ${fname} --delay ${delay}${dryPart}`;
+
+  document.getElementById('batch-cmd-text').textContent = cmd;
+  document.getElementById('batch-cmd-wrap').classList.add('show');
+  document.getElementById('batch-copy-btn').textContent = '복사';
+  document.getElementById('batch-copy-btn').classList.remove('copied');
+}
 
 function copyCmd(textId, btnId) {
   navigator.clipboard.writeText(document.getElementById(textId).textContent).then(() => {
