@@ -14,3 +14,4 @@ scraper/source_update.log
 # Large media (add back if file exceeds 100MB)
 # docs/src/assets/*.mp4
 .env
+docs/slides/*.pdf

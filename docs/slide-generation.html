@@ -281,6 +281,16 @@ body { padding-bottom: 80px; font-size: 14px; }
 .empty-title { font-size: 16px; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
 .empty-sub { font-size: 13px; line-height: 1.65; }
 
+/* ── Server badge ─────────────────────────────────────────── */
+.server-badge {
+  display: inline-block;
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: 9999px;
+  letter-spacing: .02em;
+}
+.server-badge.online  { background: var(--g3-bg); color: var(--g3); }
+.server-badge.offline { background: var(--surface-cream-strong); color: var(--muted); }
+
 /* ── Toast ────────────────────────────────────────────────── */
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -381,9 +391,12 @@ body { padding-bottom: 80px; font-size: 14px; }
         <span class="btn-icon">✦</span>
         슬라이드 생성
       </button>
-      <div class="gen-hint">
-        NotebookLM이 리서치 DB를 기반으로 PDF 슬라이드를 생성합니다.<br>
-        완료 후 자동으로 슬라이드 목록에 저장됩니다.
+      <div>
+        <div id="server-badge" class="server-badge offline">○ 서버 오프라인</div>
+        <div class="gen-hint" style="margin-top:6px">
+          로컬 서버 필요:
+          <code style="background:var(--surface-dark);color:var(--accent-teal);padding:1px 6px;border-radius:4px;font-size:11px">python scraper/slide_server.py</code>
+        </div>
       </div>
     </div>
 
@@ -393,21 +406,21 @@ body { padding-bottom: 80px; font-size: 14px; }
         <div class="gen-spinner" id="gen-spinner"></div>
         <div>
           <div class="gen-status-msg" id="gen-status-msg">슬라이드를 생성하는 중입니다...</div>
-          <div class="gen-status-sub" id="gen-status-sub">약 1~2분 소요됩니다</div>
+          <div class="gen-status-sub" id="gen-status-sub">약 1~3분 소요됩니다</div>
         </div>
       </div>
       <div class="gen-status-steps">
         <div class="step-row" id="step-1">
-          <div class="step-dot"></div>시나리오 분석 및 아웃라인 생성
+          <div class="step-dot"></div>NotebookLM 노트북 생성
         </div>
         <div class="step-row" id="step-2">
-          <div class="step-dot"></div>NotebookLM 노트북 준비
+          <div class="step-dot"></div>리서치 DB 소스 추가
         </div>
         <div class="step-row" id="step-3">
-          <div class="step-dot"></div>슬라이드 콘텐츠 생성
+          <div class="step-dot"></div>슬라이드 생성 (가장 오래 걸립니다)
         </div>
         <div class="step-row" id="step-4">
-          <div class="step-dot"></div>PDF 변환 및 다운로드 준비
+          <div class="step-dot"></div>PDF 다운로드 및 저장
         </div>
       </div>
     </div>
@@ -482,15 +495,57 @@ function setExample(el) {
   ta.focus();
 }
 
-/* ── Slide generation ─────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════
+   SERVER CONNECTION
+══════════════════════════════════════════════════════════ */
+const API = 'http://localhost:8765';
+let serverOnline = false;
+let pollTimer    = null;
+let currentJobId = null;
+
+async function checkServer() {
+  try {
+    const r = await fetch(`${API}/ping`, { signal: AbortSignal.timeout(1500) });
+    serverOnline = r.ok;
+  } catch {
+    serverOnline = false;
+  }
+  updateServerBadge();
+  return serverOnline;
+}
+
+function updateServerBadge() {
+  const badge = document.getElementById('server-badge');
+  if (!badge) return;
+  if (serverOnline) {
+    badge.textContent = '● 서버 연결됨';
+    badge.className   = 'server-badge online';
+    document.getElementById('btn-generate').disabled =
+      document.getElementById('scenario-input').value.trim().length < 10;
+  } else {
+    badge.textContent = '○ 서버 오프라인';
+    badge.className   = 'server-badge offline';
+    document.getElementById('btn-generate').disabled = true;
+  }
+}
+
+/* ── Step display ─────────────────────────────────────────── */
 const STEPS = ['step-1','step-2','step-3','step-4'];
 
-function setStep(idx) {
+function setStep(n) {
   STEPS.forEach((id, i) => {
     const el = document.getElementById(id);
     el.classList.remove('done','active');
-    if (i < idx)  el.classList.add('done');
-    if (i === idx) el.classList.add('active');
+    if (i < n - 1) el.classList.add('done');
+    if (i === n - 1) el.classList.add('active');
+  });
+}
+
+function setAllDone() {
+  STEPS.forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('active');
+    el.classList.add('done');
   });
 }
 
@@ -499,139 +554,133 @@ function setStatusMsg(msg, sub) {
   document.getElementById('gen-status-sub').textContent = sub || '';
 }
 
+/* ── Generate ─────────────────────────────────────────────── */
 async function startGenerate() {
-  const scenario = document.getElementById('scenario-input').value.trim();
-  if (scenario.length < 10) return;
+  const scenario   = document.getElementById('scenario-input').value.trim();
+  const category   = document.getElementById('opt-category').value;
+  const slideCount = parseInt(document.getElementById('opt-slides').value);
+  const lang       = document.getElementById('opt-lang').value;
+  const fmt        = document.getElementById('opt-format')?.value || 'detailed_deck';
 
-  const category  = document.getElementById('opt-category').value;
-  const slideCount = document.getElementById('opt-slides').value;
-  const lang      = document.getElementById('opt-lang').value;
+  if (scenario.length < 10 || !serverOnline) return;
 
-  // UI: 생성 시작
   document.getElementById('btn-generate').disabled = true;
-  const status = document.getElementById('gen-status');
-  status.classList.add('show');
+  document.getElementById('gen-status').classList.add('show');
   document.getElementById('gen-spinner').style.display = 'block';
+  setStep(1);
+  setStatusMsg('생성 요청 전송 중...', '');
 
   try {
-    setStep(0);
-    setStatusMsg('시나리오를 분석하는 중...', '아웃라인을 구성합니다');
-    await delay(800);
-
-    setStep(1);
-    setStatusMsg('NotebookLM 노트북을 준비하는 중...', '리서치 DB를 연결합니다');
-    await delay(600);
-
-    setStep(2);
-    setStatusMsg('슬라이드 콘텐츠를 생성하는 중...', `${slideCount}개 슬라이드 작성 중`);
-    // TODO: NotebookLM MCP 연동
-    // const result = await callNotebookLM({ scenario, category, slideCount, lang });
-    await delay(1000);
-
-    setStep(3);
-    setStatusMsg('PDF로 변환하는 중...', '완료 후 자동 저장됩니다');
-    await delay(800);
-
-    // 완료 처리 (임시 — NotebookLM 연동 후 실제 결과로 교체)
-    STEPS.forEach(id => {
-      const el = document.getElementById(id);
-      el.classList.remove('active');
-      el.classList.add('done');
+    const res = await fetch(`${API}/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario, category, slideCount, lang, format: fmt }),
     });
-    document.getElementById('gen-spinner').style.display = 'none';
-    setStatusMsg('✓ 생성 완료', '슬라이드 목록에서 확인하세요');
-
-    // 아카이브에 임시 저장
-    saveToArchive({
-      title: scenario.slice(0, 60) + (scenario.length > 60 ? '…' : ''),
-      category: category || 'auto',
-      slideCount: parseInt(slideCount),
-      lang,
-      createdAt: new Date().toISOString(),
-    });
-
-    toast('슬라이드 생성 완료 — 슬라이드 목록에서 확인하세요');
-    setTimeout(() => selTab('archive'), 1800);
-
+    if (!res.ok) throw new Error(`서버 오류 ${res.status}`);
+    const { job_id } = await res.json();
+    currentJobId = job_id;
+    pollJob(job_id);
   } catch (e) {
-    setStatusMsg('❌ 생성 실패', e.message);
-    toast('생성에 실패했습니다: ' + e.message);
-  } finally {
+    setStatusMsg('❌ 요청 실패', e.message);
     document.getElementById('btn-generate').disabled = false;
   }
 }
 
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+function pollJob(jobId) {
+  clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    try {
+      const res  = await fetch(`${API}/status/${jobId}`);
+      const job  = await res.json();
 
-/* ── Archive (localStorage 임시 저장) ─────────────────────── */
-const STORE_KEY = 'laf_slides';
+      if (job.status === 'running' || job.status === 'pending') {
+        setStep(job.step || 1);
+        setStatusMsg(job.msg || '처리 중...', '');
+        return;
+      }
 
-function getSlides() {
-  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch { return []; }
+      clearInterval(pollTimer);
+
+      if (job.status === 'done') {
+        setAllDone();
+        document.getElementById('gen-spinner').style.display = 'none';
+        setStatusMsg('✓ 슬라이드 생성 완료!', '슬라이드 목록에서 확인하세요');
+        toast('슬라이드 생성 완료!');
+        setTimeout(() => selTab('archive'), 1800);
+      } else {
+        setStatusMsg('❌ 생성 실패', job.error || '알 수 없는 오류');
+        toast('생성 실패: ' + (job.error || '알 수 없는 오류'));
+      }
+      document.getElementById('btn-generate').disabled = false;
+    } catch {
+      /* 일시적 네트워크 오류 — 계속 폴링 */
+    }
+  }, 4000);
 }
-function saveSlides(arr) {
-  localStorage.setItem(STORE_KEY, JSON.stringify(arr));
-}
-function saveToArchive(slide) {
-  const arr = getSlides();
-  arr.unshift({ id: Date.now(), ...slide });
-  saveSlides(arr);
-}
 
-function loadArchive() {
-  const slides = getSlides();
-  const grid   = document.getElementById('slide-grid');
-  const count  = document.getElementById('archive-count');
-  count.innerHTML = `<strong>${slides.length}</strong>개 슬라이드`;
+/* ── Archive ──────────────────────────────────────────────── */
+async function loadArchive() {
+  const grid  = document.getElementById('slide-grid');
+  const count = document.getElementById('archive-count');
+  grid.innerHTML = '<div class="empty-state"><div class="empty-icon" style="font-size:24px;animation:none">⏳</div><div class="empty-title" style="font-size:14px">불러오는 중...</div></div>';
 
-  if (!slides.length) {
-    grid.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🎞</div>
-        <div class="empty-title">아직 생성된 슬라이드가 없습니다</div>
-        <div class="empty-sub">
-          슬라이드 생성 탭에서 시나리오를 입력하고<br>
-          생성 버튼을 눌러 첫 번째 슬라이드를 만들어 보세요.
-        </div>
-      </div>`;
-    return;
+  try {
+    // 1) 로컬 서버에서 가져오기 (서버 실행 중일 때)
+    let slides = [];
+    if (serverOnline) {
+      const r = await fetch(`${API}/slides`);
+      if (r.ok) slides = await r.json();
+    }
+    // 2) fallback: docs/data/slides.json (GitHub Pages 정적 서빙)
+    if (!slides.length) {
+      const r2 = await fetch('./data/slides.json?t=' + Date.now());
+      if (r2.ok) slides = await r2.json();
+    }
+
+    count.innerHTML = `<strong>${slides.length}</strong>개 슬라이드`;
+    if (!slides.length) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🎞</div>
+          <div class="empty-title">아직 생성된 슬라이드가 없습니다</div>
+          <div class="empty-sub">
+            슬라이드 생성 탭에서 시나리오를 입력하고<br>
+            생성 버튼을 눌러 첫 번째 슬라이드를 만들어 보세요.
+          </div>
+        </div>`;
+      return;
+    }
+    grid.innerHTML = slides.map(s => slideCard(s)).join('');
+  } catch {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-title">불러오기 실패</div></div>';
   }
-
-  grid.innerHTML = slides.map(s => slideCard(s)).join('');
 }
 
-const CAT_G = { '1':'g1','2':'g2','3':'g3','4':'g4','auto':'' };
+const CAT_G = { '1':'g1','2':'g2','3':'g3','4':'g4' };
 
 function slideCard(s) {
-  const date = new Date(s.createdAt).toLocaleDateString('ko-KR', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-  const g    = CAT_G[s.category.split('-')[0]] || '';
-  const cat  = s.category === 'auto' ? 'AUTO' : s.category;
+  const date = new Date(s.createdAt).toLocaleDateString('ko-KR',
+    { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  const g   = CAT_G[s.category?.split('-')[0]] || '';
+  const cat = s.category === 'auto' ? 'AUTO' : (s.category || 'AUTO');
+  const hasPdf = !!s.pdf_path;
   return `
   <div class="slide-card">
     <div class="slide-thumb">🎞</div>
     <div class="slide-body">
       <div class="slide-title">${esc(s.title)}</div>
-      <div class="slide-meta">${s.slideCount}슬라이드 · ${s.lang === 'ko' ? '한국어' : 'English'} · ${date}</div>
+      <div class="slide-meta">${s.slideCount || '?'}슬라이드 · ${s.lang === 'ko' ? '한국어' : 'English'} · ${date}</div>
     </div>
     <div class="slide-foot">
       <span class="slide-cat ${g}">${esc(cat)}</span>
-      <a class="slide-dl" href="#" onclick="downloadSlide(${s.id}); return false;">
-        ↓ 다운로드
-      </a>
+      <div style="display:flex;gap:8px;align-items:center">
+        ${s.nb_url ? `<a class="slide-dl" href="${esc(s.nb_url)}" target="_blank" rel="noopener">NotebookLM ↗</a>` : ''}
+        ${hasPdf
+          ? `<a class="slide-dl" href="${API}/download/${esc(s.id)}" target="_blank">↓ PDF</a>`
+          : `<span style="font-size:11px;color:var(--muted-soft)">PDF 준비 중</span>`}
+      </div>
     </div>
   </div>`;
-}
-
-function downloadSlide(id) {
-  // TODO: NotebookLM MCP 연동 후 실제 PDF 다운로드
-  toast('NotebookLM 연동 후 다운로드가 활성화됩니다');
-}
-
-function deleteSlide(id) {
-  const arr = getSlides().filter(s => s.id !== id);
-  saveSlides(arr);
-  loadArchive();
-  toast('삭제됐습니다');
 }
 
 /* ── Toast ────────────────────────────────────────────────── */
@@ -641,13 +690,19 @@ function toast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
 }
 
 /* ── Escape ───────────────────────────────────────────────── */
 function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+/* ── Init ─────────────────────────────────────────────────── */
+checkServer();
+setInterval(checkServer, 10000);   // 10초마다 서버 상태 체크
 </script>
 <script src="./nav.js"></script>
 </body>
