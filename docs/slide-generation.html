@@ -48,7 +48,9 @@ body { padding-bottom: 80px; font-size: 14px; }
    PANEL: 슬라이드 생성
 ══════════════════════════════════════════════════════════ */
 #panel-generate {
-  max-width: 720px;
+  width: 66.67%;
+  max-width: 900px;
+  min-width: 320px;
   padding: 32px 28px;
 }
 
@@ -72,7 +74,7 @@ body { padding-bottom: 80px; font-size: 14px; }
 }
 .scenario-input {
   width: 100%;
-  min-height: 180px;
+  min-height: 90px;
   padding: 14px 16px;
   border: 1.5px solid var(--hairline);
   border-radius: 10px;
@@ -349,6 +351,9 @@ body { padding-bottom: 80px; font-size: 14px; }
 }
 .toast.show { opacity: 1; }
 
+@media (max-width: 960px) {
+  #panel-generate { width: 100%; }
+}
 @media (max-width: 640px) {
   #panel-generate { padding: 20px 16px; }
   #panel-archive  { padding: 16px; }
@@ -439,7 +444,7 @@ body { padding-bottom: 80px; font-size: 14px; }
     <!-- 맞춤 프롬프트 -->
     <div style="margin-top:18px">
       <label class="gen-label">맞춤 프롬프트 <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted-soft)">(슬라이드 스타일 설명)</span></label>
-      <textarea class="scenario-input" id="custom-prompt" style="min-height:96px;margin-bottom:14px"
+      <textarea class="scenario-input" id="custom-prompt" style="min-height:48px;margin-bottom:14px"
         >업로드된 소스 내용을 바탕으로, 슬라이드 전체를 흥미진진한 만화 형식으로 만들어줘. 각 슬라이드는 개별 만화 컷처럼 레이아웃을 구성하고, 캐릭터들이 대화하는 듯한 형식과 시각적 효과를 포함해줘. 청중이 영화를 보는 것처럼 느낄 수 있게 해줘.</textarea>
 
       <!-- 스타일 선택 버튼 -->
