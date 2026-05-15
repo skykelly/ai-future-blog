@@ -40,13 +40,17 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install notebooklm-mcp-cli
-        run: pip install notebooklm-mcp-cli==0.6.9 requests beautifulsoup4 lxml
+      - name: Install notebooklm-mcp-cli + Playwright deps
+        run: |
+          pip install notebooklm-mcp-cli==0.6.9 requests beautifulsoup4 lxml
+          # Playwright Chromium (nlm이 내부적으로 사용할 수 있음)
+          pip install playwright
+          playwright install chromium --with-deps
 
       - name: Setup NLM auth (cookies)
         run: |
           mkdir -p ~/.notebooklm-mcp-cli/profiles/default
-          echo '${{ secrets.NLM_COOKIES_JSON }}' > /tmp/nlm_cookies.json
+          printf '%s' '${{ secrets.NLM_COOKIES_JSON }}' > /tmp/nlm_cookies.json
           nlm login --manual -f /tmp/nlm_cookies.json
           rm /tmp/nlm_cookies.json
 
