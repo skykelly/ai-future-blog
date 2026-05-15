@@ -311,15 +311,31 @@ body { padding-bottom: 80px; font-size: 14px; }
 }
 .style-chip.on .style-chip-label { color: var(--primary); background: rgba(204,120,92,.10); }
 
-/* ── Server badge ─────────────────────────────────────────── */
-.server-badge {
-  display: inline-block;
-  font-size: 11px; font-weight: 600;
-  padding: 3px 10px; border-radius: 9999px;
-  letter-spacing: .02em;
+/* ── PAT notice / form ────────────────────────────────────── */
+.pat-notice {
+  display: none; margin-bottom: 12px; padding: 9px 14px;
+  border-radius: 8px; background: var(--g2-bg);
+  border: 0.5px solid var(--g2-b);
+  font-size: 12px; color: var(--g2);
+  align-items: center; gap: 10px; cursor: pointer;
 }
-.server-badge.online  { background: var(--g3-bg); color: var(--g3); }
-.server-badge.offline { background: var(--surface-cream-strong); color: var(--muted); }
+.pat-notice.show { display: flex; }
+.pat-form {
+  display: none; margin-bottom: 14px; padding: 12px 14px;
+  border-radius: 8px; background: var(--surface-card);
+  border: 0.5px solid var(--hairline);
+  align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.pat-form.show { display: flex; }
+.pat-form input {
+  flex: 1; min-width: 200px; padding: 7px 10px;
+  border: 1px solid var(--hairline); border-radius: 7px;
+  background: var(--canvas); color: var(--ink);
+  font-family: monospace; font-size: 12px; outline: none;
+  transition: border-color .12s;
+}
+.pat-form input:focus { border-color: var(--primary); }
+.pat-form-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
 
 /* ── Toast ────────────────────────────────────────────────── */
 .toast {
@@ -452,18 +468,29 @@ body { padding-bottom: 80px; font-size: 14px; }
       </div>
     </div>
 
+    <!-- GitHub PAT 입력 (최초 1회) -->
+    <div class="pat-notice" id="pat-notice">
+      <span>🔑 GitHub PAT를 설정하면 버튼 클릭만으로 자동 생성됩니다</span>
+      <button class="btn btn-ghost btn-sm" onclick="showPatForm()">설정</button>
+    </div>
+    <div class="pat-form" id="pat-form">
+      <span class="pat-form-label">GitHub PAT</span>
+      <input type="password" id="pat-input"
+             placeholder="ghp_xxxxxxxxxxxx (repo + actions 권한 필요)"
+             onkeydown="if(event.key==='Enter') savePat()">
+      <button class="btn btn-primary btn-sm" onclick="savePat()">저장</button>
+      <button class="btn btn-ghost btn-sm" onclick="hidePatForm()">취소</button>
+    </div>
+
     <!-- CTA -->
     <div class="gen-cta">
       <button class="btn-generate" id="btn-generate" onclick="startGenerate()" disabled>
         <span class="btn-icon">✦</span>
         슬라이드 생성
       </button>
-      <div>
-        <div id="server-badge" class="server-badge offline">○ 서버 오프라인</div>
-        <div class="gen-hint" style="margin-top:6px">
-          로컬 서버 필요:
-          <code style="background:var(--surface-dark);color:var(--accent-teal);padding:1px 6px;border-radius:4px;font-size:11px">python scraper/slide_server.py</code>
-        </div>
+      <div class="gen-hint">
+        GitHub Actions로 클라우드에서 생성됩니다.<br>
+        완료 후 슬라이드 목록에 자동 저장됩니다. (약 3~5분)
       </div>
     </div>
 
@@ -472,23 +499,28 @@ body { padding-bottom: 80px; font-size: 14px; }
       <div class="gen-status-row">
         <div class="gen-spinner" id="gen-spinner"></div>
         <div>
-          <div class="gen-status-msg" id="gen-status-msg">슬라이드를 생성하는 중입니다...</div>
-          <div class="gen-status-sub" id="gen-status-sub">약 1~3분 소요됩니다</div>
+          <div class="gen-status-msg" id="gen-status-msg">워크플로우를 시작하는 중...</div>
+          <div class="gen-status-sub" id="gen-status-sub">약 3~5분 소요됩니다</div>
         </div>
       </div>
       <div class="gen-status-steps">
         <div class="step-row" id="step-1">
-          <div class="step-dot"></div>NotebookLM 노트북 생성
+          <div class="step-dot"></div>GitHub Actions 워크플로우 시작
         </div>
         <div class="step-row" id="step-2">
-          <div class="step-dot"></div>리서치 DB 소스 추가
+          <div class="step-dot"></div>NotebookLM 노트북 생성 · 소스 추가
         </div>
         <div class="step-row" id="step-3">
-          <div class="step-dot"></div>슬라이드 생성 (가장 오래 걸립니다)
+          <div class="step-dot"></div>슬라이드 생성 (1~3분 소요)
         </div>
         <div class="step-row" id="step-4">
-          <div class="step-dot"></div>PDF 다운로드 및 저장
+          <div class="step-dot"></div>PDF 저장 · GitHub Pages 배포
         </div>
+      </div>
+      <div id="run-link" style="margin-top:12px;font-size:12px;display:none">
+        <a id="run-link-a" href="#" target="_blank" style="color:var(--primary)">
+          GitHub Actions 실행 로그 보기 ↗
+        </a>
       </div>
     </div>
   </div>
@@ -563,36 +595,46 @@ function setExample(el) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   SERVER CONNECTION
+   CONFIG
 ══════════════════════════════════════════════════════════ */
-const API = 'http://localhost:8765';
-let serverOnline = false;
-let pollTimer    = null;
-let currentJobId = null;
+const REPO      = 'skykelly/ai-future-blog';
+const WORKFLOW  = 'generate_slide.yml';
+const PAT_KEY   = 'gh_pat_slides';
+const RAW_BASE  = `https://raw.githubusercontent.com/${REPO}/main`;
+const PAGES_BASE = `https://skykelly.github.io/ai-future-blog`;
 
-async function checkServer() {
-  try {
-    const r = await fetch(`${API}/ping`, { signal: AbortSignal.timeout(1500) });
-    serverOnline = r.ok;
-  } catch {
-    serverOnline = false;
-  }
-  updateServerBadge();
-  return serverOnline;
+/* ══════════════════════════════════════════════════════════
+   PAT management
+══════════════════════════════════════════════════════════ */
+function getPat() { return localStorage.getItem(PAT_KEY) || ''; }
+
+function savePat() {
+  const val = document.getElementById('pat-input').value.trim();
+  if (!val) return;
+  localStorage.setItem(PAT_KEY, val);
+  hidePatForm();
+  initPatUI();
 }
 
-function updateServerBadge() {
-  const badge = document.getElementById('server-badge');
-  if (!badge) return;
-  if (serverOnline) {
-    badge.textContent = '● 서버 연결됨';
-    badge.className   = 'server-badge online';
+function showPatForm() {
+  document.getElementById('pat-notice').classList.remove('show');
+  document.getElementById('pat-form').classList.add('show');
+  document.getElementById('pat-input').focus();
+}
+function hidePatForm() {
+  document.getElementById('pat-form').classList.remove('show');
+  initPatUI();
+}
+
+function initPatUI() {
+  const pat = getPat();
+  if (!pat) {
+    document.getElementById('pat-notice').classList.add('show');
+    document.getElementById('btn-generate').disabled = true;
+  } else {
+    document.getElementById('pat-notice').classList.remove('show');
     document.getElementById('btn-generate').disabled =
       document.getElementById('scenario-input').value.trim().length < 10;
-  } else {
-    badge.textContent = '○ 서버 오프라인';
-    badge.className   = 'server-badge offline';
-    document.getElementById('btn-generate').disabled = true;
   }
 }
 
@@ -651,7 +693,9 @@ function selStyle(el) {
     BASE_PROMPT + '\n\n' + STYLE_PROMPTS[style];
 }
 
-/* ── Generate ─────────────────────────────────────────────── */
+/* ── Generate via GitHub Actions ──────────────────────────── */
+let pollTimer = null;
+
 async function startGenerate() {
   const scenario     = document.getElementById('scenario-input').value.trim();
   const category     = document.getElementById('opt-category').value;
@@ -659,61 +703,134 @@ async function startGenerate() {
   const fmt          = document.getElementById('opt-format').value;
   const length       = document.getElementById('opt-length').value;
   const customPrompt = document.getElementById('custom-prompt').value.trim();
+  const pat          = getPat();
 
-  if (scenario.length < 10 || !serverOnline) return;
+  if (scenario.length < 10 || !pat) return;
+
+  // 고유 job_id 생성 (시간 기반)
+  const jobId = 'sl' + Date.now().toString(36);
 
   document.getElementById('btn-generate').disabled = true;
   document.getElementById('gen-status').classList.add('show');
   document.getElementById('gen-spinner').style.display = 'block';
   setStep(1);
-  setStatusMsg('생성 요청 전송 중...', '');
+  setStatusMsg('GitHub Actions 워크플로우 시작 중...', '');
 
   try {
-    const res = await fetch(`${API}/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scenario, category, lang, format: fmt, length, customPrompt }),
-    });
-    if (!res.ok) throw new Error(`서버 오류 ${res.status}`);
-    const { job_id } = await res.json();
-    currentJobId = job_id;
-    pollJob(job_id);
+    // GitHub workflow_dispatch API 호출
+    const dispatchRes = await fetch(
+      `https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/dispatches`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${pat}`,
+          'Accept':        'application/vnd.github+json',
+          'Content-Type':  'application/json',
+        },
+        body: JSON.stringify({
+          ref: 'main',
+          inputs: {
+            job_id:        jobId,
+            scenario:      scenario,
+            category:      category,
+            format:        fmt,
+            length:        length,
+            lang:          lang,
+            custom_prompt: customPrompt,
+          },
+        }),
+      }
+    );
+
+    if (dispatchRes.status === 401) throw new Error('PAT 인증 실패 — 토큰을 확인하세요');
+    if (dispatchRes.status === 403) throw new Error('권한 없음 — PAT에 actions:write 권한이 필요합니다');
+    if (!dispatchRes.ok)            throw new Error(`GitHub API 오류 (${dispatchRes.status})`);
+
+    setStep(1);
+    setStatusMsg('워크플로우 시작됨 — 실행 대기 중...', '잠시 후 진행 상태가 업데이트됩니다');
+
+    // 워크플로우 실행이 목록에 나타날 때까지 잠깐 대기
+    await new Promise(r => setTimeout(r, 4000));
+    pollWorkflow(jobId, pat, Date.now());
+
   } catch (e) {
-    setStatusMsg('❌ 요청 실패', e.message);
+    document.getElementById('gen-spinner').style.display = 'none';
+    setStatusMsg('❌ 시작 실패', e.message);
+    toast('오류: ' + e.message);
     document.getElementById('btn-generate').disabled = false;
   }
 }
 
-function pollJob(jobId) {
+async function pollWorkflow(jobId, pat, startedAt) {
   clearInterval(pollTimer);
-  pollTimer = setInterval(async () => {
-    try {
-      const res  = await fetch(`${API}/status/${jobId}`);
-      const job  = await res.json();
+  let runId    = null;
+  let attempts = 0;
 
-      if (job.status === 'running' || job.status === 'pending') {
-        setStep(job.step || 1);
-        setStatusMsg(job.msg || '처리 중...', '');
+  pollTimer = setInterval(async () => {
+    attempts++;
+    try {
+      // 최근 실행 목록에서 우리 실행 찾기
+      if (!runId) {
+        const runsRes = await fetch(
+          `https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/runs?per_page=10`,
+          { headers: { 'Authorization': `Bearer ${pat}`, 'Accept': 'application/vnd.github+json' } }
+        );
+        const runs = (await runsRes.json()).workflow_runs || [];
+        // dispatch 직후 생성된 run 찾기
+        const match = runs.find(r => new Date(r.created_at).getTime() >= startedAt - 10000);
+        if (match) {
+          runId = match.id;
+          const runUrl = match.html_url;
+          document.getElementById('run-link').style.display = 'block';
+          document.getElementById('run-link-a').href = runUrl;
+          setStep(2);
+          setStatusMsg('워크플로우 실행 중...', 'NotebookLM 노트북 준비 중');
+        } else if (attempts > 15) {
+          throw new Error('워크플로우 실행을 찾을 수 없습니다 — GitHub Actions 탭을 확인하세요');
+        }
         return;
       }
 
-      clearInterval(pollTimer);
+      // 실행 상태 조회
+      const runRes = await fetch(
+        `https://api.github.com/repos/${REPO}/actions/runs/${runId}`,
+        { headers: { 'Authorization': `Bearer ${pat}`, 'Accept': 'application/vnd.github+json' } }
+      );
+      const run = await runRes.json();
+      const status     = run.status;      // queued | in_progress | completed
+      const conclusion = run.conclusion;  // success | failure | cancelled | null
 
-      if (job.status === 'done') {
-        setAllDone();
+      if (status === 'queued') {
+        setStep(1); setStatusMsg('워크플로우 대기 중...', '');
+      } else if (status === 'in_progress') {
+        // jobs API로 현재 step 추정
+        const elapsed = Math.round((Date.now() - startedAt) / 1000);
+        if (elapsed < 60)       { setStep(2); setStatusMsg('NotebookLM 노트북 생성 · 소스 추가 중...', `${elapsed}초 경과`); }
+        else if (elapsed < 200) { setStep(3); setStatusMsg('슬라이드 생성 중... (가장 오래 걸립니다)', `${elapsed}초 경과`); }
+        else                    { setStep(4); setStatusMsg('PDF 저장 · 배포 중...', `${elapsed}초 경과`); }
+      } else if (status === 'completed') {
+        clearInterval(pollTimer);
         document.getElementById('gen-spinner').style.display = 'none';
-        setStatusMsg('✓ 슬라이드 생성 완료!', '슬라이드 목록에서 확인하세요');
-        toast('슬라이드 생성 완료!');
-        setTimeout(() => selTab('archive'), 1800);
-      } else {
-        setStatusMsg('❌ 생성 실패', job.error || '알 수 없는 오류');
-        toast('생성 실패: ' + (job.error || '알 수 없는 오류'));
+
+        if (conclusion === 'success') {
+          setAllDone();
+          setStatusMsg('✓ 슬라이드 생성 완료!', '슬라이드 목록에서 확인하세요 (Pages 반영 약 1분)');
+          toast('슬라이드 생성 완료!');
+          setTimeout(() => selTab('archive'), 2000);
+        } else {
+          setStatusMsg(`❌ 워크플로우 ${conclusion}`, '로그를 확인하세요');
+          toast(`워크플로우 실패: ${conclusion}`);
+        }
+        document.getElementById('btn-generate').disabled = false;
       }
-      document.getElementById('btn-generate').disabled = false;
-    } catch {
-      /* 일시적 네트워크 오류 — 계속 폴링 */
+    } catch(e) {
+      if (attempts > 80) {
+        clearInterval(pollTimer);
+        setStatusMsg('⏱ 폴링 시간 초과', '직접 GitHub Actions에서 확인하세요');
+        document.getElementById('btn-generate').disabled = false;
+      }
     }
-  }, 4000);
+  }, 6000);
 }
 
 /* ── Archive ──────────────────────────────────────────────── */
@@ -723,13 +840,14 @@ async function loadArchive() {
   grid.innerHTML = '<div class="empty-state"><div class="empty-icon" style="font-size:24px;animation:none">⏳</div><div class="empty-title" style="font-size:14px">불러오는 중...</div></div>';
 
   try {
-    // 1) 로컬 서버에서 가져오기 (서버 실행 중일 때)
     let slides = [];
-    if (serverOnline) {
-      const r = await fetch(`${API}/slides`);
+    // raw.githubusercontent.com → 최신 commits 데이터 즉시 반영
+    const rawUrl = `${RAW_BASE}/docs/data/slides.json?t=${Date.now()}`;
+    try {
+      const r = await fetch(rawUrl);
       if (r.ok) slides = await r.json();
-    }
-    // 2) fallback: docs/data/slides.json (GitHub Pages 정적 서빙)
+    } catch {}
+    // fallback: 현재 Pages 서빙
     if (!slides.length) {
       const r2 = await fetch('./data/slides.json?t=' + Date.now());
       if (r2.ok) slides = await r2.json();
@@ -774,7 +892,7 @@ function slideCard(s) {
       <div style="display:flex;gap:8px;align-items:center">
         ${s.nb_url ? `<a class="slide-dl" href="${esc(s.nb_url)}" target="_blank" rel="noopener">NotebookLM ↗</a>` : ''}
         ${hasPdf
-          ? `<a class="slide-dl" href="${API}/download/${esc(s.id)}" target="_blank">↓ PDF</a>`
+          ? `<a class="slide-dl" href="${PAGES_BASE}/${esc(s.pdf_url || 'slides/'+s.id+'.pdf')}" target="_blank">↓ PDF</a>`
           : `<span style="font-size:11px;color:var(--muted-soft)">PDF 준비 중</span>`}
       </div>
     </div>
@@ -798,9 +916,18 @@ function esc(s) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+/* ── onScenarioInput ──────────────────────────────────────── */
+function onScenarioInput() {
+  const ta  = document.getElementById('scenario-input');
+  const len = ta.value.length;
+  document.getElementById('char-count').textContent = `${len} / 2000`;
+  if (getPat()) {
+    document.getElementById('btn-generate').disabled = len < 10;
+  }
+}
+
 /* ── Init ─────────────────────────────────────────────────── */
-checkServer();
-setInterval(checkServer, 10000);   // 10초마다 서버 상태 체크
+initPatUI();
 </script>
 <script src="./nav.js"></script>
 </body>

@@ -1,0 +1,73 @@
+name: Generate Slide
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: 'Job ID (HTML에서 생성)'
+        required: true
+      scenario:
+        description: '생활 변화 시나리오'
+        required: true
+      category:
+        description: '카테고리 포커스 (예: 1-1)'
+        default: ''
+      format:
+        description: 'presenter_slides | detailed_deck'
+        default: 'presenter_slides'
+      length:
+        description: 'short | default'
+        default: 'short'
+      lang:
+        description: 'ko | en'
+        default: 'ko'
+      custom_prompt:
+        description: '맞춤 프롬프트'
+        default: ''
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install notebooklm-mcp-cli
+        run: pip install notebooklm-mcp-cli==0.6.9 requests beautifulsoup4 lxml
+
+      - name: Setup NLM auth (cookies)
+        run: |
+          mkdir -p ~/.notebooklm-mcp-cli/profiles/default
+          echo '${{ secrets.NLM_COOKIES_JSON }}' > /tmp/nlm_cookies.json
+          nlm login --manual -f /tmp/nlm_cookies.json
+          rm /tmp/nlm_cookies.json
+
+      - name: Verify NLM auth
+        run: nlm login --check
+
+      - name: Generate slide
+        env:
+          JOB_ID:        ${{ inputs.job_id }}
+          SCENARIO:      ${{ inputs.scenario }}
+          CATEGORY:      ${{ inputs.category }}
+          SLIDE_FORMAT:  ${{ inputs.format }}
+          SLIDE_LENGTH:  ${{ inputs.length }}
+          LANG:          ${{ inputs.lang }}
+          CUSTOM_PROMPT: ${{ inputs.custom_prompt }}
+        run: python scraper/generate_slide_ci.py
+
+      - name: Commit and push results
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/slides/ docs/data/slides.json
+          git diff --staged --quiet || git commit -m "feat: 슬라이드 생성 완료 (${{ inputs.job_id }})"
+          git push
