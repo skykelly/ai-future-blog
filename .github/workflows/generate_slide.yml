@@ -27,35 +27,18 @@ on:
 
 jobs:
   generate:
-    runs-on: ubuntu-latest
+    # 자체 호스팅 러너 사용: nlm이 이미 설치·로그인된 로컬 머신에서 실행
+    # 설정: GitHub repo → Settings → Actions → Runners → New self-hosted runner
+    runs-on: self-hosted
     permissions:
       contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-
-      - name: Install notebooklm-mcp-cli + Playwright deps
-        run: |
-          pip install notebooklm-mcp-cli==0.6.9 requests beautifulsoup4 lxml
-          # Playwright Chromium (nlm이 내부적으로 사용할 수 있음)
-          pip install playwright
-          playwright install chromium --with-deps
-
-      - name: Setup NLM auth (cookies)
-        run: |
-          mkdir -p ~/.notebooklm-mcp-cli/profiles/default
-          printf '%s' '${{ secrets.NLM_COOKIES_JSON }}' > /tmp/nlm_cookies.json
-          nlm login --manual -f /tmp/nlm_cookies.json
-          rm /tmp/nlm_cookies.json
-
-      - name: Verify NLM auth
-        run: nlm login --check
+          # 항상 최신 코드로 pull (동시 실행 충돌 방지)
+          clean: false
 
       - name: Generate slide
         env:
@@ -66,12 +49,13 @@ jobs:
           SLIDE_LENGTH:  ${{ inputs.length }}
           LANG:          ${{ inputs.lang }}
           CUSTOM_PROMPT: ${{ inputs.custom_prompt }}
-        run: python scraper/generate_slide_ci.py
+        run: python3 scraper/generate_slide_ci.py
 
       - name: Commit and push results
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
           git add docs/slides/ docs/data/slides.json
           git diff --staged --quiet || git commit -m "feat: 슬라이드 생성 완료 (${{ inputs.job_id }})"
           git push
