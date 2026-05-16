@@ -48,9 +48,7 @@ body { padding-bottom: 80px; font-size: 14px; }
    PANEL: 슬라이드 생성
 ══════════════════════════════════════════════════════════ */
 #panel-generate {
-  width: 66.67%;
-  max-width: 900px;
-  min-width: 320px;
+  max-width: 720px;
   padding: 32px 28px;
 }
 
@@ -74,7 +72,7 @@ body { padding-bottom: 80px; font-size: 14px; }
 }
 .scenario-input {
   width: 100%;
-  min-height: 90px;
+  min-height: 180px;
   padding: 14px 16px;
   border: 1.5px solid var(--hairline);
   border-radius: 10px;
@@ -313,7 +311,31 @@ body { padding-bottom: 80px; font-size: 14px; }
 }
 .style-chip.on .style-chip-label { color: var(--primary); background: rgba(204,120,92,.10); }
 
-/* PAT UI 제거됨 — Supabase 자동 로딩 */
+/* ── PAT notice / form ────────────────────────────────────── */
+.pat-notice {
+  display: none; margin-bottom: 12px; padding: 9px 14px;
+  border-radius: 8px; background: var(--g2-bg);
+  border: 0.5px solid var(--g2-b);
+  font-size: 12px; color: var(--g2);
+  align-items: center; gap: 10px; cursor: pointer;
+}
+.pat-notice.show { display: flex; }
+.pat-form {
+  display: none; margin-bottom: 14px; padding: 12px 14px;
+  border-radius: 8px; background: var(--surface-card);
+  border: 0.5px solid var(--hairline);
+  align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.pat-form.show { display: flex; }
+.pat-form input {
+  flex: 1; min-width: 200px; padding: 7px 10px;
+  border: 1px solid var(--hairline); border-radius: 7px;
+  background: var(--canvas); color: var(--ink);
+  font-family: monospace; font-size: 12px; outline: none;
+  transition: border-color .12s;
+}
+.pat-form input:focus { border-color: var(--primary); }
+.pat-form-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
 
 /* ── Toast ────────────────────────────────────────────────── */
 .toast {
@@ -327,9 +349,6 @@ body { padding-bottom: 80px; font-size: 14px; }
 }
 .toast.show { opacity: 1; }
 
-@media (max-width: 960px) {
-  #panel-generate { width: 100%; }
-}
 @media (max-width: 640px) {
   #panel-generate { padding: 20px 16px; }
   #panel-archive  { padding: 16px; }
@@ -420,7 +439,7 @@ body { padding-bottom: 80px; font-size: 14px; }
     <!-- 맞춤 프롬프트 -->
     <div style="margin-top:18px">
       <label class="gen-label">맞춤 프롬프트 <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted-soft)">(슬라이드 스타일 설명)</span></label>
-      <textarea class="scenario-input" id="custom-prompt" style="min-height:48px;margin-bottom:14px"
+      <textarea class="scenario-input" id="custom-prompt" style="min-height:96px;margin-bottom:14px"
         >업로드된 소스 내용을 바탕으로, 슬라이드 전체를 흥미진진한 만화 형식으로 만들어줘. 각 슬라이드는 개별 만화 컷처럼 레이아웃을 구성하고, 캐릭터들이 대화하는 듯한 형식과 시각적 효과를 포함해줘. 청중이 영화를 보는 것처럼 느낄 수 있게 해줘.</textarea>
 
       <!-- 스타일 선택 버튼 -->
@@ -449,13 +468,27 @@ body { padding-bottom: 80px; font-size: 14px; }
       </div>
     </div>
 
+    <!-- GitHub PAT 입력 (최초 1회) -->
+    <div class="pat-notice" id="pat-notice">
+      <span>🔑 GitHub PAT를 설정하면 버튼 클릭만으로 자동 생성됩니다</span>
+      <button class="btn btn-ghost btn-sm" onclick="showPatForm()">설정</button>
+    </div>
+    <div class="pat-form" id="pat-form">
+      <span class="pat-form-label">GitHub PAT</span>
+      <input type="password" id="pat-input"
+             placeholder="ghp_xxxxxxxxxxxx (repo + actions 권한 필요)"
+             onkeydown="if(event.key==='Enter') savePat()">
+      <button class="btn btn-primary btn-sm" onclick="savePat()">저장</button>
+      <button class="btn btn-ghost btn-sm" onclick="hidePatForm()">취소</button>
+    </div>
+
     <!-- CTA -->
     <div class="gen-cta">
       <button class="btn-generate" id="btn-generate" onclick="startGenerate()" disabled>
         <span class="btn-icon">✦</span>
         슬라이드 생성
       </button>
-      <div class="gen-hint" id="gen-hint">
+      <div class="gen-hint">
         GitHub Actions로 클라우드에서 생성됩니다.<br>
         완료 후 슬라이드 목록에 자동 저장됩니다. (약 3~5분)
       </div>
@@ -571,32 +604,39 @@ const RAW_BASE  = `https://raw.githubusercontent.com/${REPO}/main`;
 const PAGES_BASE = `https://skykelly.github.io/ai-future-blog`;
 
 /* ══════════════════════════════════════════════════════════
-   PAT — Supabase에서 자동 로딩
+   PAT management
 ══════════════════════════════════════════════════════════ */
-let _pat = '';
-function getPat() { return _pat; }
+function getPat() { return localStorage.getItem(PAT_KEY) || ''; }
 
-async function loadPat() {
-  try {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/settings?key=eq.github_pat&select=value`,
-      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
-    );
-    const data = await r.json();
-    if (data?.[0]?.value) {
-      _pat = data[0].value;
-      document.getElementById('btn-generate').disabled =
-        document.getElementById('scenario-input').value.trim().length < 10;
-    } else {
-      document.getElementById('gen-hint').innerHTML =
-        '⚠️ PAT 설정 필요 — Supabase settings 테이블에 github_pat 키를 등록하세요.';
-    }
-  } catch {
-    document.getElementById('gen-hint').textContent = '⚠️ PAT 로드 실패';
-  }
+function savePat() {
+  const val = document.getElementById('pat-input').value.trim();
+  if (!val) return;
+  localStorage.setItem(PAT_KEY, val);
+  hidePatForm();
+  initPatUI();
 }
 
-function initPatUI() { /* Supabase 로딩으로 대체 */ }
+function showPatForm() {
+  document.getElementById('pat-notice').classList.remove('show');
+  document.getElementById('pat-form').classList.add('show');
+  document.getElementById('pat-input').focus();
+}
+function hidePatForm() {
+  document.getElementById('pat-form').classList.remove('show');
+  initPatUI();
+}
+
+function initPatUI() {
+  const pat = getPat();
+  if (!pat) {
+    document.getElementById('pat-notice').classList.add('show');
+    document.getElementById('btn-generate').disabled = true;
+  } else {
+    document.getElementById('pat-notice').classList.remove('show');
+    document.getElementById('btn-generate').disabled =
+      document.getElementById('scenario-input').value.trim().length < 10;
+  }
+}
 
 /* ── Step display ─────────────────────────────────────────── */
 const STEPS = ['step-1','step-2','step-3','step-4'];
@@ -881,13 +921,13 @@ function onScenarioInput() {
   const ta  = document.getElementById('scenario-input');
   const len = ta.value.length;
   document.getElementById('char-count').textContent = `${len} / 2000`;
-  if (_pat) {
+  if (getPat()) {
     document.getElementById('btn-generate').disabled = len < 10;
   }
 }
 
 /* ── Init ─────────────────────────────────────────────────── */
-loadPat();
+initPatUI();
 </script>
 <script src="./nav.js"></script>
 </body>
